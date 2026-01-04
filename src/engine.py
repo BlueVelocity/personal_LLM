@@ -25,8 +25,15 @@ class AIEngine:
         else:
             return models
 
+    def remove_from_memory(self):
+        ollama.generate(model=self.model, keep_alive=0)
+
     def get_response_stream(self, messages: list[Message]):
         stream = self.client.chat(
-            model=self.model, messages=messages, options={"num_ctx": 16384}, stream=True
+            model=self.model,
+            messages=messages,
+            options={"num_ctx": 16384},
+            stream=True,
+            keep_alive=60,
         )
         return stream

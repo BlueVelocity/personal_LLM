@@ -125,6 +125,7 @@ def main():
                 CONSOLE.print(f"[bold red][!] Error:[/bold red] {e}")
     except KeyboardInterrupt:
         CONSOLE.print("[bold red]Ending session...[/bold red]")
+        ai.remove_from_memory()
 
 
 if __name__ == "__main__":
