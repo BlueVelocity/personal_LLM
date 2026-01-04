@@ -6,6 +6,7 @@ from rich.markdown import Markdown
 from rich.panel import Panel
 from datetime import date
 from prompt_toolkit import prompt
+from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.formatted_text import HTML
 
 from engine import AIEngine
@@ -40,6 +41,7 @@ def initialize_messages(initial_context, initial_instructions) -> list[Message]:
 
 def main():
     CONSOLE = Console()
+    chat_history_log = InMemoryHistory()
 
     config = get_config()
     model_name = config["model_info"]["MAIN_MODEL"]
@@ -69,6 +71,7 @@ def main():
                 HTML("<ansiblue><b>\n> You:</b></ansiblue> "),
                 multiline=True,
                 prompt_continuation=prompt_continuation,
+                history=chat_history_log,
             ).strip()
 
             if not user_input:
