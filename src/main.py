@@ -13,10 +13,16 @@ from schemas import Message
 
 
 def get_config():
-    absolute_path = Path(__file__).resolve()
+    config_path = Path(__file__).resolve().parent.parent / "config.yaml"
 
-    with open(f"{absolute_path.parent.parent}/config.yaml", "r") as file:
-        return yaml.safe_load(file)
+    try:
+        with open(f"{config_path.parent.parent}/config.yaml", "r") as file:
+            return yaml.safe_load(file)
+    except FileNotFoundError:
+        raise FileNotFoundError(
+            f"Config file not found at: {config_path}\n"
+            "Have you created 'config.yaml' in the project root?"
+        )
 
 
 # TODO: Add USER_DATA which will be passed in as an argument 'user_data' and added to the system message as 'USER_DATA:'
