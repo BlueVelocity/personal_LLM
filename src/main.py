@@ -1,4 +1,5 @@
 import yaml
+from pathlib import Path
 from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
@@ -12,7 +13,9 @@ from schemas import Message
 
 
 def get_config():
-    with open("../config.yaml", "r") as file:
+    absolute_path = Path(__file__).resolve()
+
+    with open(f"{absolute_path.parent.parent}/config.yaml", "r") as file:
         return yaml.safe_load(file)
 
 
