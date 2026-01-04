@@ -61,67 +61,70 @@ def main():
         ),
     )
 
-    while True:
-        try:
-            # This function adds "..." to the start of new lines
-            def prompt_continuation(width, line_number, is_soft_wrap):
-                return "." * (width - 1) + " "
+    try:
+        while True:
+            try:
+                # This function adds "..." to the start of new lines
+                def prompt_continuation(width, line_number, is_soft_wrap):
+                    return "." * (width - 1) + " "
 
-            user_input = prompt(
-                HTML("<ansiblue><b>\n> You:</b></ansiblue> "),
-                multiline=True,
-                prompt_continuation=prompt_continuation,
-                history=chat_history_log,
-            ).strip()
+                user_input = prompt(
+                    HTML("<ansiblue><b>\n> You:</b></ansiblue> "),
+                    multiline=True,
+                    prompt_continuation=prompt_continuation,
+                    history=chat_history_log,
+                ).strip()
 
-            if not user_input:
-                continue
-        except EOFError:
-            break
+                if not user_input:
+                    continue
+            except EOFError:
+                break
 
-        if user_input.lower() in ["exit", "quit"]:
-            CONSOLE.print("[bold red]Ending session...[/bold red]")
-            break
+            if user_input.lower() in ["exit", "quit"]:
+                CONSOLE.print("[bold red]Ending session...[/bold red]")
+                break
 
-        # Add User Message to History
-        messages.append({"role": "user", "content": user_input})
+            # Add User Message to History
+            messages.append({"role": "user", "content": user_input})
 
-        full_response = ""
+            full_response = ""
 
-        try:
-            print("")
-            with Live(
-                Panel(
-                    "Thinking...",
-                    title=f"[bold cyan]{model_name}[/bold cyan]",
-                    title_align="left",
-                    border_style="cyan",
-                    expand=True,
-                ),
-                console=CONSOLE,
-                refresh_per_second=50,
-            ) as live:
-                response_stream = ai.get_response_stream(messages)
+            try:
+                print("")
+                with Live(
+                    Panel(
+                        "Thinking...",
+                        title=f"[bold cyan]{model_name}[/bold cyan]",
+                        title_align="left",
+                        border_style="cyan",
+                        expand=True,
+                    ),
+                    console=CONSOLE,
+                    refresh_per_second=50,
+                ) as live:
+                    response_stream = ai.get_response_stream(messages)
 
-                for chunk in response_stream:
-                    content = chunk["message"]["content"]
-                    if content:
-                        full_response += content
-                        live.update(
-                            Panel(
-                                Markdown(full_response),
-                                title=f"[bold cyan]{model_name}[/bold cyan]",
-                                title_align="left",
-                                border_style="cyan",
-                                expand=True,
+                    for chunk in response_stream:
+                        content = chunk["message"]["content"]
+                        if content:
+                            full_response += content
+                            live.update(
+                                Panel(
+                                    Markdown(full_response),
+                                    title=f"[bold cyan]{model_name}[/bold cyan]",
+                                    title_align="left",
+                                    border_style="cyan",
+                                    expand=True,
+                                )
                             )
-                        )
 
-            # Save AI response to history
-            messages.append({"role": "assistant", "content": full_response})
+                # Save AI response to history
+                messages.append({"role": "assistant", "content": full_response})
 
-        except Exception as e:
-            CONSOLE.print(f"[bold red][!] Error:[/bold red] {e}")
+            except Exception as e:
+                CONSOLE.print(f"[bold red][!] Error:[/bold red] {e}")
+    except KeyboardInterrupt:
+        CONSOLE.print("[bold red]Ending session...[/bold red]")
 
 
 if __name__ == "__main__":
