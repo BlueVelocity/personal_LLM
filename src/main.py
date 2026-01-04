@@ -16,7 +16,7 @@ def get_config():
     config_path = Path(__file__).resolve().parent.parent / "config.yaml"
 
     try:
-        with open(f"{config_path.parent.parent}/config.yaml", "r") as file:
+        with open(f"{config_path}", "r") as file:
             return yaml.safe_load(file)
     except FileNotFoundError:
         raise FileNotFoundError(
