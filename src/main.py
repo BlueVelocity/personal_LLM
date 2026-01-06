@@ -1,13 +1,7 @@
 import yaml
 from pathlib import Path
-from rich.console import Console
-from rich.live import Live
-from rich.markdown import Markdown
-from rich.panel import Panel
-from prompt_toolkit import prompt
-from prompt_toolkit.history import InMemoryHistory
-from prompt_toolkit.formatted_text import HTML
 
+from view import View
 from engine import AIEngine
 from search import SearchEngine
 
@@ -26,17 +20,13 @@ def get_config():
 
 
 def main():
-    CONSOLE = Console()
-    chat_history_log = InMemoryHistory()
-
     def end_session():
-        CONSOLE.print("[bold red]Ending session...[/bold red]")
+        view.print("[bold red]Ending session...[/bold red]")
         ai.remove_from_memory()
 
     config = get_config()
     model_name = config["model_info"]["MAIN_MODEL"]
     sub_model_name = config["model_info"]["SUB_MODEL"]
-
     initial_context = config["system_prompt"]["initial_context"]
     initial_instructions = config["system_prompt"]["system_instructions"]
 
@@ -46,32 +36,15 @@ def main():
 
     search_engine = SearchEngine(config["search_settings"]["engine_name"])
 
-    CONSOLE.print(
-        Panel(
-            f"[bold yellow]Chat Session Started[/bold yellow]\n[bold cyan]Model: {model_name}[/bold cyan]\n[cyan]Sub Model: {sub_model_name}[/cyan]\n[yellow]Type 'exit' or 'quit' to end the session.[/yellow]",
-            expand=True,
-            border_style="yellow",
-        ),
-    )
+    view = View()
+
+    view.print_header_panel(model_name, sub_model_name)
 
     try:
         while True:
-            try:
-
-                def prompt_continuation(width, line_number, is_soft_wrap):
-                    return "." * (width - 1) + " "
-
-                user_input = prompt(
-                    HTML("<ansiblue><b>\n> You:</b></ansiblue> "),
-                    multiline=True,
-                    prompt_continuation=prompt_continuation,
-                    history=chat_history_log,
-                ).strip()
-
-                if not user_input:
-                    continue
-            except EOFError:
-                break
+            user_input = view.get_user_input()
+            if not user_input:
+                continue
 
             if user_input.lower() in ["exit", "quit"]:
                 end_session()
@@ -79,45 +52,22 @@ def main():
 
             ai.add_user_message(user_input)
 
-            full_response = ""
+            search_results = search_engine.text_query(user_input)
+            ai.add_search_message(search_results)
+
+            response_stream = ai.get_response_stream()
+
+            ai_response = view.live_response(model_name, response_stream)
+
             try:
-                print("")
-
-                search_results = search_engine.text_query(user_input)
-                ai.add_search_message(search_results)
-
-                with Live(
-                    Panel(
-                        "Thinking...",
-                        title=f"[bold cyan]{model_name}[/bold cyan]",
-                        title_align="left",
-                        border_style="cyan",
-                        expand=True,
-                    ),
-                    console=CONSOLE,
-                    refresh_per_second=50,
-                ) as live:
-                    for chunk in ai.get_response_stream():
-                        content = chunk["message"]["content"]
-                        if content:
-                            full_response += content
-                            live.update(
-                                Panel(
-                                    Markdown(full_response),
-                                    title=f"[bold cyan]{model_name}[/bold cyan]",
-                                    title_align="left",
-                                    border_style="cyan",
-                                    expand=True,
-                                )
-                            )
-
-                ai.add_assistant_message(full_response)
-
+                ai.add_assistant_message(ai_response)
             except Exception as e:
-                CONSOLE.print(f"[bold red][!] Error:[/bold red] {e}")
+                view.print(f"[bold red][!] Error:[/bold red] {e}")
 
     except KeyboardInterrupt:
         end_session()
+    except Exception:
+        raise Exception
 
 
 if __name__ == "__main__":

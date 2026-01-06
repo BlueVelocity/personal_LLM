@@ -1,3 +1,4 @@
+from typing import Iterator
 import ollama
 import threading
 from datetime import date
@@ -64,10 +65,10 @@ class AIEngine:
 
     def add_search_message(self, content: str) -> None:
         self.messages.append(
-            {"role": "user", "content": f"INTERNET SEARCH RESULTS{content}"}
+            {"role": "user", "content": f"INTERNET SEARCH RESULTS:\n{content}"}
         )
 
-    def get_response_stream(self):
+    def get_response_stream(self) -> Iterator:
         stream = self.client.chat(
             model=self.model,
             messages=self.messages,
