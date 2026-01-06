@@ -4,13 +4,11 @@ from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
 from rich.panel import Panel
-from datetime import date
 from prompt_toolkit import prompt
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.formatted_text import HTML
 
 from engine import AIEngine
-from schemas import Message
 
 
 def get_config():
@@ -26,19 +24,6 @@ def get_config():
         )
 
 
-# TODO: Add USER_DATA which will be passed in as an argument 'user_data' and added to the system message as 'USER_DATA:'
-def initialize_messages(initial_context, initial_instructions) -> list[Message]:
-    system_message: Message = {
-        "role": "system",
-        "content": f"""
-        CONTEXT: {initial_context}
-        CURRENT DATE: {date.today()}.
-        INSTRUCTIONS: {initial_instructions} 
-        """,
-    }
-    return [system_message]
-
-
 def main():
     CONSOLE = Console()
     chat_history_log = InMemoryHistory()
@@ -47,11 +32,11 @@ def main():
     model_name = config["model_info"]["MAIN_MODEL"]
     sub_model_name = config["model_info"]["SUB_MODEL"]
 
-    messages = initialize_messages(
-        config["system_prompt"]["initial_context"],
-        config["system_prompt"]["system_instructions"],
-    )
+    initial_context = config["system_prompt"]["initial_context"]
+    initial_instructions = config["system_prompt"]["system_instructions"]
+
     ai = AIEngine(model_name)
+    ai.set_system_message(initial_context, initial_instructions, user_data=None)
 
     CONSOLE.print(
         Panel(
@@ -85,7 +70,7 @@ def main():
                 break
 
             # Add User Message to History
-            messages.append({"role": "user", "content": user_input})
+            ai.add_user_message(user_input)
 
             full_response = ""
 
@@ -102,9 +87,7 @@ def main():
                     console=CONSOLE,
                     refresh_per_second=50,
                 ) as live:
-                    response_stream = ai.get_response_stream(messages)
-
-                    for chunk in response_stream:
+                    for chunk in ai.get_response_stream():
                         content = chunk["message"]["content"]
                         if content:
                             full_response += content
@@ -119,7 +102,7 @@ def main():
                             )
 
                 # Save AI response to history
-                messages.append({"role": "assistant", "content": full_response})
+                ai.add_assistant_message(full_response)
 
             except Exception as e:
                 CONSOLE.print(f"[bold red][!] Error:[/bold red] {e}")
