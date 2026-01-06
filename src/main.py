@@ -28,6 +28,10 @@ def main():
     CONSOLE = Console()
     chat_history_log = InMemoryHistory()
 
+    def end_session():
+        CONSOLE.print("[bold red]Ending session...[/bold red]")
+        ai.remove_from_memory()
+
     config = get_config()
     model_name = config["model_info"]["MAIN_MODEL"]
     sub_model_name = config["model_info"]["SUB_MODEL"]
@@ -37,6 +41,7 @@ def main():
 
     ai = AIEngine(model_name)
     ai.set_system_message(initial_context, initial_instructions, user_data=None)
+    ai.load()
 
     CONSOLE.print(
         Panel(
@@ -66,7 +71,7 @@ def main():
                 break
 
             if user_input.lower() in ["exit", "quit"]:
-                CONSOLE.print("[bold red]Ending session...[/bold red]")
+                end_session()
                 break
 
             # Add User Message to History
@@ -107,8 +112,7 @@ def main():
             except Exception as e:
                 CONSOLE.print(f"[bold red][!] Error:[/bold red] {e}")
     except KeyboardInterrupt:
-        CONSOLE.print("[bold red]Ending session...[/bold red]")
-        ai.remove_from_memory()
+        end_session()
 
 
 if __name__ == "__main__":

@@ -6,9 +6,24 @@ from datetime import date
 class AIEngine:
     def __init__(self, model) -> None:
         self.model = model
+        self.engine_options = {"num_ctx": 16384}
         self.models = self.get_models()
         self.client = ollama.Client()
         self.messages = []
+
+        self.load()
+
+    def load(self):
+        thread = threading.Thread(
+            target=self.client.generate,
+            kwargs={
+                "model": self.model,
+                "options": self.engine_options,
+                "keep_alive": 60,
+            },
+            daemon=True,
+        )
+        thread.start()  # Starts the thread and returns immediately
 
     def get_models(self):
         try:
@@ -51,7 +66,7 @@ class AIEngine:
         stream = self.client.chat(
             model=self.model,
             messages=self.messages,
-            options={"num_ctx": 16384},
+            options=self.engine_options,
             stream=True,
             keep_alive=60,
         )
