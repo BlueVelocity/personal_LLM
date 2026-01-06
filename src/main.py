@@ -9,6 +9,7 @@ from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.formatted_text import HTML
 
 from engine import AIEngine
+from search import SearchEngine
 
 
 def get_config():
@@ -43,6 +44,8 @@ def main():
     ai.set_system_message(initial_context, initial_instructions, user_data=None)
     ai.load()
 
+    search_engine = SearchEngine(config["search_settings"]["engine_name"])
+
     CONSOLE.print(
         Panel(
             f"[bold yellow]Chat Session Started[/bold yellow]\n[bold cyan]Model: {model_name}[/bold cyan]\n[cyan]Sub Model: {sub_model_name}[/cyan]\n[yellow]Type 'exit' or 'quit' to end the session.[/yellow]",
@@ -54,7 +57,7 @@ def main():
     try:
         while True:
             try:
-                # This function adds "..." to the start of new lines
+
                 def prompt_continuation(width, line_number, is_soft_wrap):
                     return "." * (width - 1) + " "
 
@@ -74,13 +77,15 @@ def main():
                 end_session()
                 break
 
-            # Add User Message to History
             ai.add_user_message(user_input)
 
             full_response = ""
-
             try:
                 print("")
+
+                search_results = search_engine.text_query(user_input)
+                ai.add_search_message(search_results)
+
                 with Live(
                     Panel(
                         "Thinking...",
@@ -106,11 +111,11 @@ def main():
                                 )
                             )
 
-                # Save AI response to history
                 ai.add_assistant_message(full_response)
 
             except Exception as e:
                 CONSOLE.print(f"[bold red][!] Error:[/bold red] {e}")
+
     except KeyboardInterrupt:
         end_session()
 

@@ -56,11 +56,16 @@ class AIEngine:
             }
         )
 
-    def add_user_message(self, content) -> None:
+    def add_user_message(self, content: str) -> None:
         self.messages.append({"role": "user", "content": content})
 
-    def add_assistant_message(self, content) -> None:
+    def add_assistant_message(self, content: str) -> None:
         self.messages.append({"role": "assistant", "content": content})
+
+    def add_search_message(self, content: str) -> None:
+        self.messages.append(
+            {"role": "user", "content": f"INTERNET SEARCH RESULTS{content}"}
+        )
 
     def get_response_stream(self):
         stream = self.client.chat(
