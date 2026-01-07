@@ -139,7 +139,10 @@ class AIEngine:
             "role": "system",
             "content": f"""CONTEXT: You are an AI working for another AI assistant to determine if they need to do an internet search to best serve the user.
             CURRENT DATE: {date.today()}.
-            INSTRUCTIONS: Only search the internet if it is needed for extra context.
+            INSTRUCTIONS: 
+            Only search the internet if it is needed for extra context.
+            Search the internet if explicitly asked (i.e. "look it up...", "google...", "search...", etc.)
+            If you do not know, or the information is not available, look it up on the internet.
             Be sure to include the date in the request if required.
             Review conversation history and responses, and analyze the LATEST QUERY. Does it require a new real-time web search?
             Respond ONLY in JSON format. Respond: {{"needs_search": true, "search_term": "..."}} or {{"needs_search": false, "search_term": ""}}
