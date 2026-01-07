@@ -1,0 +1,15 @@
+models:
+  MAIN: "qwen3:14b"
+  SEARCH: ""
+
+memory:
+  keep_alive: 60
+
+system_prompt:
+  initial_context: "You are an AI assistant."
+  system_instructions: "Maintain natural conversation flow. Be succinct."
+
+search_settings:
+  # Options: tavily, ddgs
+  engine_name: "tavily"
+  headers: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"

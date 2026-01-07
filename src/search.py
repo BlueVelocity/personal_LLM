@@ -9,9 +9,9 @@ from bs4 import BeautifulSoup
 class SearchEngine:
     """Provides access to internet search engines"""
 
-    def __init__(self, selected_engine: str, headers: str) -> None:
+    def __init__(self, selected_engine: str, user_agent: str = "") -> None:
         self.selected_engine = selected_engine
-        self.headers = headers
+        self.user_agent = user_agent
 
     def text_query(self, query: str) -> str:
         """
@@ -46,6 +46,7 @@ class SearchEngine:
                 url = result.get("url", "")
 
                 context += f"Source [{i}]: {title}\nURL: {url}\nContent: {content}\n\n"
+                print(f"[{i}]: {url}")
 
             return context
         except Exception:
@@ -64,11 +65,10 @@ class SearchEngine:
                 url = r.get("href")
                 if url:
                     try:
-                        headers = {"User-Agent": self.headers}
+                        headers = {"User-Agent": self.user_agent}
                         response = requests.get(url, headers=headers, timeout=10)
-                        print(response)
+                        print(f"[{response.status_code}]: {response.url}")
                         soup = BeautifulSoup(response.content, "html.parser")
-                        # Extract main text (this varies by website)
                         text = soup.get_text(separator="\n", strip=True)
                         results.append(
                             {"title": r.get("title"), "url": url, "full_text": text}
@@ -84,5 +84,5 @@ class SearchEngine:
 
             context = ""
             for result in results:
-                context += f"Title: {result['title']}\nURL: {result['url']}\n{result['full_text']}...\n\n"
+                context += f"Title: {result['title']}\nURL: {result['url']}\n{result['full_text'][:5000]}...\n\n"
             return context
