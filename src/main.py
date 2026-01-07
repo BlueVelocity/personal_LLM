@@ -22,23 +22,24 @@ def get_config():
 
 def main():
     config = get_config()
-    model_name = config["model_info"]["MAIN_MODEL"]
-    sub_model_name = config["model_info"]["SUB_MODEL"]
+    main_model = config["models"]["MAIN"]
+    search_term_model = config["models"]["SEARCH_GENERATOR"]
+    router_model = config["models"]["ROUTER"]
     initial_context = config["system_prompt"]["initial_context"]
     initial_instructions = config["system_prompt"]["system_instructions"]
 
-    if sub_model_name == "" or sub_model_name is None:
-        sub_model_name = model_name
+    if search_term_model == "" or search_term_model is None:
+        search_term_model = main_model
 
-    ai = AIEngine(model_name, sub_model_name)
+    ai = AIEngine(main_model, search_term_model, router_model)
     ai.set_system_message(initial_context, initial_instructions, user_data=None)
-    ai.load()
+    ai.load_into_memory()
 
     search_engine = SearchEngine(config["search_settings"]["engine_name"])
 
     view = View()
 
-    view.print_header_panel(model_name, sub_model_name)
+    view.print_header_panel(main_model, search_term_model)
 
     def end_session():
         view.print("[bold red]Ending session...[/bold red]")
@@ -62,7 +63,7 @@ def main():
 
             response_stream = ai.get_response_stream()
 
-            ai_response = view.live_response(model_name, response_stream)
+            ai_response = view.live_response(main_model, response_stream)
 
             try:
                 ai.add_assistant_message(ai_response)
