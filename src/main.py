@@ -63,6 +63,7 @@ def main():
             ai.add_user_message(user_input)
 
             # Search the web
+            view.print_system_message("Reviewing query...", True)
             search_decision = ai.determine_search()
             if search_decision["needs_search"]:
                 view.print_system_message(
@@ -71,7 +72,7 @@ def main():
                 search_results = search.text_query(search_decision["search_term"])
                 ai.add_search_message(search_results)
             else:
-                view.print_system_message("Decided not to search...")
+                view.print_system_message("Decided not to search.")
 
             # Get and print the response
             response_stream = ai.get_response_stream()

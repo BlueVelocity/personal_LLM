@@ -18,8 +18,12 @@ class View:
     def print(self, text: str) -> None:
         self.CONSOLE.print(text)
 
-    def print_system_message(self, message: str):
-        self.CONSOLE.print(f"\n[bold cyan][*][/bold cyan] {message}")
+    def print_system_message(self, message: str, line_break: bool = False):
+        match line_break:
+            case True:
+                self.CONSOLE.print(f"\n[bold cyan][*][/bold cyan] {message}")
+            case _:
+                self.CONSOLE.print(f"[bold cyan][*][/bold cyan] {message}")
 
     def print_header_panel(self, model: str, search_model: str) -> None:
         self.CONSOLE.print(
