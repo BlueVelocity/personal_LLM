@@ -29,7 +29,8 @@ def main():
     keep_alive_model = config["memory"]["keep_alive"]
     initial_context = config["system_prompt"]["initial_context"]
     initial_instructions = config["system_prompt"]["system_instructions"]
-    selected_engine = config["search_settings"]["engine_name"]
+    search_engine = config["search_settings"]["engine_name"]
+    search_headers = config["search_settings"]["headers"]
 
     if search_term_model == "" or search_term_model is None:
         search_term_model = main_model
@@ -38,7 +39,7 @@ def main():
     ai.set_system_message(initial_context, initial_instructions, user_data=None)
     ai.load_into_memory()
 
-    search_engine = SearchEngine(selected_engine)
+    search = SearchEngine(search_engine, search_headers)
 
     view = View()
 
@@ -61,18 +62,18 @@ def main():
 
             ai.add_user_message(user_input)
 
+            # Search the web
             search_decision = ai.determine_search()
             if search_decision["needs_search"]:
                 view.print_system_message(
                     f"Searching the web for: [italic]{search_decision['search_term']}[/italic]..."
                 )
-                search_results = search_engine.text_query(
-                    search_decision["search_term"]
-                )
+                search_results = search.text_query(search_decision["search_term"])
                 ai.add_search_message(search_results)
             else:
                 view.print_system_message("Decided not to search...")
 
+            # Get and print the response
             response_stream = ai.get_response_stream()
             ai_response = view.live_response(main_model, response_stream)
             ai.add_assistant_message(ai_response)
