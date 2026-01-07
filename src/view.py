@@ -1,5 +1,4 @@
 from typing import Iterator
-from operator import mod
 from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
@@ -18,9 +17,6 @@ class View:
         self.CONSOLE.print(text)
 
     def print_header_panel(self, model_name: str, sub_model_name: str | None) -> None:
-        if sub_model_name is None:
-            sub_model_name = model_name
-
         self.CONSOLE.print(
             Panel(
                 f"[bold yellow]Chat Session Started[/bold yellow]\n[bold cyan]Model: {model_name}[/bold cyan]\n[cyan]Sub Model: {sub_model_name}[/cyan]\n[yellow]Type 'exit' or 'quit' to end the session.[/yellow]",

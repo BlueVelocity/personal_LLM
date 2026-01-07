@@ -30,7 +30,10 @@ def main():
     initial_context = config["system_prompt"]["initial_context"]
     initial_instructions = config["system_prompt"]["system_instructions"]
 
-    ai = AIEngine(model_name)
+    if sub_model_name == "" or sub_model_name is None:
+        sub_model_name = model_name
+
+    ai = AIEngine(model_name, sub_model_name)
     ai.set_system_message(initial_context, initial_instructions, user_data=None)
     ai.load()
 
@@ -66,8 +69,8 @@ def main():
 
     except KeyboardInterrupt:
         end_session()
-    except Exception:
-        raise Exception
+    except Exception as e:
+        raise e
 
 
 if __name__ == "__main__":

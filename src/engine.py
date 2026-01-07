@@ -5,8 +5,9 @@ from datetime import date
 
 
 class AIEngine:
-    def __init__(self, model) -> None:
+    def __init__(self, model: str, sub_model: str) -> None:
         self.model = model
+        self.sub_model = sub_model
         self.engine_options = {"num_ctx": 16384}
         self.models = self.get_models()
         self.client = ollama.Client()
@@ -24,27 +25,42 @@ class AIEngine:
             },
             daemon=True,
         )
-        thread.start()  # Starts the thread and returns immediately
 
-    def get_models(self):
+        thread.start()
+
+    def get_models(self) -> ollama.ListResponse:
         try:
             models = ollama.list()
+
+            model_names = [m.model for m in models.models]
+
+            has_main = self.model in model_names
+            has_sub = self.sub_model in model_names
+
+            hint = "\nIs it configured correctly in config.yaml?\nHint: Run 'ollama list' to list installed models"
+            if not has_main and not has_sub and self.model != self.sub_model:
+                raise Exception(
+                    f"Model '{self.model}' and sub-model '{self.sub_model}' are not installed.{hint}"
+                )
+            elif not has_main:
+                raise Exception(f"Model '{self.model}' not installed.{hint}")
+            elif not has_sub:
+                raise Exception(f"Sub-model '{self.sub_model}' not installed.?{hint}")
+
         except ConnectionError:
             raise ConnectionError(
-                "Could not connect to Ollama. Is the service running?"
+                "Could not connect to Ollama.\nIs the service running?"
             )
 
         except ollama.ResponseError:
             raise
-
-        except Exception as e:
-            print(f"An unexpected error occurred: {e}")
 
         else:
             return models
 
     def remove_from_memory(self) -> None:
         ollama.generate(model=self.model, keep_alive=0)
+        ollama.generate(model=self.sub_model, keep_alive=0)
 
     # TODO: Add USER_DATA which will be passed in as an argument 'user_data' and added to the system message as 'USER_DATA:'
     def set_system_message(
