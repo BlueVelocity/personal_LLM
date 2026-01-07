@@ -4,6 +4,7 @@ from pathlib import Path
 from view import View
 from engine import AIEngine
 from search import SearchEngine
+from cleanup_handler import register_cleanup
 
 
 def get_config():
@@ -20,10 +21,6 @@ def get_config():
 
 
 def main():
-    def end_session():
-        view.print("[bold red]Ending session...[/bold red]")
-        ai.remove_from_memory()
-
     config = get_config()
     model_name = config["model_info"]["MAIN_MODEL"]
     sub_model_name = config["model_info"]["SUB_MODEL"]
@@ -43,6 +40,12 @@ def main():
 
     view.print_header_panel(model_name, sub_model_name)
 
+    def end_session():
+        view.print("[bold red]Ending session...[/bold red]")
+        ai.remove_from_memory()
+
+    register_cleanup(end_session)
+
     try:
         while True:
             user_input = view.get_user_input()
@@ -50,7 +53,6 @@ def main():
                 continue
 
             if user_input.lower() in ["exit", "quit"]:
-                end_session()
                 break
 
             ai.add_user_message(user_input)
@@ -68,7 +70,7 @@ def main():
                 view.print(f"[bold red][!] Error:[/bold red] {e}")
 
     except KeyboardInterrupt:
-        end_session()
+        pass
     except Exception as e:
         raise e
 
