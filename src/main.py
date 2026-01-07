@@ -26,17 +26,19 @@ def main():
     config = get_config()
     main_model = config["models"]["MAIN"]
     search_term_model = config["models"]["SEARCH"]
+    keep_alive_model = config["memory"]["keep_alive"]
     initial_context = config["system_prompt"]["initial_context"]
     initial_instructions = config["system_prompt"]["system_instructions"]
+    selected_engine = config["search_settings"]["engine_name"]
 
     if search_term_model == "" or search_term_model is None:
         search_term_model = main_model
 
-    ai = AIEngine(main_model, search_term_model)
+    ai = AIEngine(main_model, search_term_model, keep_alive_model)
     ai.set_system_message(initial_context, initial_instructions, user_data=None)
     ai.load_into_memory()
 
-    search_engine = SearchEngine(config["search_settings"]["engine_name"])
+    search_engine = SearchEngine(selected_engine)
 
     view = View()
 

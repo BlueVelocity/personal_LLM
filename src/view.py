@@ -9,6 +9,8 @@ from prompt_toolkit.formatted_text import HTML
 
 
 class View:
+    """Controls input and output as well as format for each to the console"""
+
     def __init__(self) -> None:
         self.CONSOLE = Console()
         self.history = InMemoryHistory()
@@ -19,10 +21,10 @@ class View:
     def print_system_message(self, message: str):
         self.CONSOLE.print(f"\n[bold cyan][*][/bold cyan] {message}")
 
-    def print_header_panel(self, model_name: str, sub_model_name: str | None) -> None:
+    def print_header_panel(self, model: str, search_model: str) -> None:
         self.CONSOLE.print(
             Panel(
-                f"[bold yellow]Chat Session Started[/bold yellow]\n[bold cyan]Model: {model_name}[/bold cyan]\n[cyan]Search Model: {sub_model_name}[/cyan]\n[yellow]Type 'exit' or 'quit' to end the session.[/yellow]",
+                f"[bold yellow]Chat Session Started[/bold yellow]\n[bold cyan]Model: {model}[/bold cyan]\n[cyan]Search Model: {search_model}[/cyan]\n[yellow]Type 'exit' or 'quit' to end the session.[/yellow]",
                 expand=True,
                 border_style="yellow",
             ),

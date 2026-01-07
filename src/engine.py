@@ -7,9 +7,10 @@ import json
 
 
 class AIEngine:
-    def __init__(self, model: str, search_model: str) -> None:
+    def __init__(self, model: str, search_model: str, time_limit: int) -> None:
         self.model = model
         self.search_model = search_model
+        self.time_limit = time_limit
         self.engine_options = {"num_ctx": 16384}
         self.models = self.get_models()
         self.client = ollama.Client()
@@ -24,7 +25,7 @@ class AIEngine:
             kwargs={
                 "model": self.model,
                 "options": self.engine_options,
-                "keep_alive": 60,
+                "keep_alive": self.time_limit,
             },
             daemon=True,
         )
@@ -37,7 +38,7 @@ class AIEngine:
                 kwargs={
                     "model": self.search_model,
                     "options": self.engine_options,
-                    "keep_alive": 60,
+                    "keep_alive": self.time_limit,
                 },
                 daemon=True,
             )
@@ -52,18 +53,18 @@ class AIEngine:
             model_names = [m.model for m in models.models]
 
             has_main = self.model in model_names
-            has_sub = self.search_model in model_names
+            has_search = self.search_model in model_names
 
             hint = "\nIs it configured correctly in config.yaml?\nHint: Run 'ollama list' to list installed models"
-            if not has_main and not has_sub and self.model != self.search_model:
+            if not has_main and not has_search and self.model != self.search_model:
                 raise Exception(
                     f"Model '{self.model}' and sub-model '{self.search_model}' are not installed.{hint}"
                 )
             elif not has_main:
                 raise Exception(f"Model '{self.model}' not installed.{hint}")
-            elif not has_sub:
+            elif not has_search:
                 raise Exception(
-                    f"Sub-model '{self.search_model}' not installed.?{hint}"
+                    f"Search-model '{self.search_model}' not installed.?{hint}"
                 )
 
         except ConnectionError:
@@ -127,7 +128,7 @@ class AIEngine:
             messages=self.messages,
             options=self.engine_options,
             stream=True,
-            keep_alive=60,
+            keep_alive=self.time_limit,
         )
         return stream
 
@@ -158,7 +159,7 @@ class AIEngine:
         }
 
         response = self.client.chat(
-            model=self.model,
+            model=self.search_model,
             messages=copy_of_messages,
             format="json",
             options=self.engine_options,
