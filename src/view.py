@@ -16,10 +16,13 @@ class View:
     def print(self, text: str) -> None:
         self.CONSOLE.print(text)
 
+    def print_system_message(self, message: str):
+        self.CONSOLE.print(f"\n[bold cyan][*][/bold cyan] {message}")
+
     def print_header_panel(self, model_name: str, sub_model_name: str | None) -> None:
         self.CONSOLE.print(
             Panel(
-                f"[bold yellow]Chat Session Started[/bold yellow]\n[bold cyan]Model: {model_name}[/bold cyan]\n[cyan]Sub Model: {sub_model_name}[/cyan]\n[yellow]Type 'exit' or 'quit' to end the session.[/yellow]",
+                f"[bold yellow]Chat Session Started[/bold yellow]\n[bold cyan]Model: {model_name}[/bold cyan]\n[cyan]Search Model: {sub_model_name}[/cyan]\n[yellow]Type 'exit' or 'quit' to end the session.[/yellow]",
                 expand=True,
                 border_style="yellow",
             ),

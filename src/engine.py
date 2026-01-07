@@ -2,13 +2,14 @@ from typing import Iterator
 import ollama
 import threading
 from datetime import date
+import copy
+import json
 
 
 class AIEngine:
-    def __init__(self, model: str, search_term_model: str, router_model: str) -> None:
+    def __init__(self, model: str, search_term_model: str) -> None:
         self.model = model
         self.search_term_model = search_term_model
-        self.router_model = router_model
         self.engine_options = {"num_ctx": 16384}
         self.models = self.get_models()
         self.client = ollama.Client()
@@ -17,6 +18,7 @@ class AIEngine:
         self.load_into_memory()
 
     def load_into_memory(self):
+        """Loads the model(s) into memory on running the program"""
         thread = threading.Thread(
             target=self.client.generate,
             kwargs={
@@ -30,6 +32,7 @@ class AIEngine:
         thread.start()
 
     def get_models(self) -> ollama.ListResponse:
+        """Gets the model list and checks that Ollama is running and aavailable"""
         try:
             models = ollama.list()
 
@@ -62,6 +65,7 @@ class AIEngine:
             return models
 
     def remove_from_memory(self) -> None:
+        """Clears the model(s) from RAM"""
         ollama.generate(model=self.model, keep_alive=0)
         ollama.generate(model=self.search_term_model, keep_alive=0)
 
@@ -77,17 +81,34 @@ class AIEngine:
         )
 
     def add_user_message(self, content: str) -> None:
+        """
+        Adds a user message to the message log
+        Args:
+            content: Content to add to user message
+        """
         self.messages.append({"role": "user", "content": content})
 
     def add_assistant_message(self, content: str) -> None:
+        """
+        Adds an assistant message to the message log
+        Args:
+            content: Content to add to assistant message
+        """
         self.messages.append({"role": "assistant", "content": content})
 
     def add_search_message(self, content: str) -> None:
+        """
+        Adds a search message to the message log
+        Args:
+            content: Content to add to the search message
+        """
         self.messages.append(
             {"role": "user", "content": f"INTERNET SEARCH RESULTS:\n{content}"}
         )
 
     def get_response_stream(self) -> Iterator:
+        """Returns the Ollama model response stream"""
+
         stream = self.client.chat(
             model=self.model,
             messages=self.messages,
@@ -96,3 +117,41 @@ class AIEngine:
             keep_alive=60,
         )
         return stream
+
+    def determine_search(self) -> dict[str, str]:
+        """Determines if search is required given the current chat context"""
+        copy_of_messages = copy.deepcopy(self.messages)
+
+        copy_of_messages[0] = {
+            "role": "system",
+            "content": f"""CONTEXT: You are an AI working for another AI assistant to determine if they need to do an internet search to best serve the user.
+            CURRENT DATE: {date.today()}.
+            INSTRUCTIONS: Only search the internet if it is needed for extra context.
+            Be sure to include the date in the request if required.
+            Review conversation history and responses, and analyze the LATEST QUERY. Does it require a new real-time web search?
+            Respond ONLY in JSON format. Respond: {{"needs_search": true, "search_term": "..."}} or {{"needs_search": false, "search_term": ""}}
+            """,
+        }
+
+        copy_of_messages[-1] = {
+            "role": "user",
+            "content": f"""
+            LATEST_QUERY:
+            {self.messages[-1]}
+            """,
+        }
+
+        response = self.client.chat(
+            model=self.model,
+            messages=copy_of_messages,
+            format="json",
+            options=self.engine_options,
+            stream=False,
+        )
+
+        result = json.loads(response["message"]["content"])
+
+        return {
+            "needs_search": result.get("needs_search"),
+            "search_term": result.get("search_term"),
+        }

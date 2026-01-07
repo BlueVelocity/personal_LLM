@@ -8,6 +8,8 @@ from cleanup_handler import register_cleanup
 
 
 def get_config():
+    """Retrieves the config.yaml from the root directory"""
+
     config_path = Path(__file__).resolve().parent.parent / "config.yaml"
 
     try:
@@ -23,15 +25,14 @@ def get_config():
 def main():
     config = get_config()
     main_model = config["models"]["MAIN"]
-    search_term_model = config["models"]["SEARCH_GENERATOR"]
-    router_model = config["models"]["ROUTER"]
+    search_term_model = config["models"]["SEARCH"]
     initial_context = config["system_prompt"]["initial_context"]
     initial_instructions = config["system_prompt"]["system_instructions"]
 
     if search_term_model == "" or search_term_model is None:
         search_term_model = main_model
 
-    ai = AIEngine(main_model, search_term_model, router_model)
+    ai = AIEngine(main_model, search_term_model)
     ai.set_system_message(initial_context, initial_instructions, user_data=None)
     ai.load_into_memory()
 
@@ -58,17 +59,21 @@ def main():
 
             ai.add_user_message(user_input)
 
-            search_results = search_engine.text_query(user_input)
-            ai.add_search_message(search_results)
+            search_decision = ai.determine_search()
+            if search_decision["needs_search"]:
+                view.print_system_message(
+                    f"Searching the web for: [italic]{search_decision['search_term']}[/italic]..."
+                )
+                search_results = search_engine.text_query(
+                    search_decision["search_term"]
+                )
+                ai.add_search_message(search_results)
+            else:
+                view.print_system_message("Decided not to search...")
 
             response_stream = ai.get_response_stream()
-
             ai_response = view.live_response(main_model, response_stream)
-
-            try:
-                ai.add_assistant_message(ai_response)
-            except Exception as e:
-                view.print(f"[bold red][!] Error:[/bold red] {e}")
+            ai.add_assistant_message(ai_response)
 
     except KeyboardInterrupt:
         pass
