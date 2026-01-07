@@ -63,7 +63,7 @@ def register_cleanup(cleanup_func: Callable[[], None]) -> CleanupHandler:
         CleanupHandler instance
 
     Example:
-        register_cleanup(end_session, "Unloading AI model...")
+        register_cleanup(end_session)
     """
     handler = CleanupHandler(cleanup_func)
     handler.register()

@@ -7,9 +7,9 @@ import json
 
 
 class AIEngine:
-    def __init__(self, model: str, search_term_model: str) -> None:
+    def __init__(self, model: str, search_model: str) -> None:
         self.model = model
-        self.search_term_model = search_term_model
+        self.search_model = search_model
         self.engine_options = {"num_ctx": 16384}
         self.models = self.get_models()
         self.client = ollama.Client()
@@ -17,7 +17,7 @@ class AIEngine:
 
         self.load_into_memory()
 
-    def load_into_memory(self):
+    def load_into_memory(self) -> None:
         """Loads the model(s) into memory on running the program"""
         thread = threading.Thread(
             target=self.client.generate,
@@ -31,6 +31,19 @@ class AIEngine:
 
         thread.start()
 
+        if self.model != self.search_model:
+            search_thread = threading.Thread(
+                target=self.client.generate,
+                kwargs={
+                    "model": self.search_model,
+                    "options": self.engine_options,
+                    "keep_alive": 60,
+                },
+                daemon=True,
+            )
+
+            search_thread.start()
+
     def get_models(self) -> ollama.ListResponse:
         """Gets the model list and checks that Ollama is running and aavailable"""
         try:
@@ -39,18 +52,18 @@ class AIEngine:
             model_names = [m.model for m in models.models]
 
             has_main = self.model in model_names
-            has_sub = self.search_term_model in model_names
+            has_sub = self.search_model in model_names
 
             hint = "\nIs it configured correctly in config.yaml?\nHint: Run 'ollama list' to list installed models"
-            if not has_main and not has_sub and self.model != self.search_term_model:
+            if not has_main and not has_sub and self.model != self.search_model:
                 raise Exception(
-                    f"Model '{self.model}' and sub-model '{self.search_term_model}' are not installed.{hint}"
+                    f"Model '{self.model}' and sub-model '{self.search_model}' are not installed.{hint}"
                 )
             elif not has_main:
                 raise Exception(f"Model '{self.model}' not installed.{hint}")
             elif not has_sub:
                 raise Exception(
-                    f"Sub-model '{self.search_term_model}' not installed.?{hint}"
+                    f"Sub-model '{self.search_model}' not installed.?{hint}"
                 )
 
         except ConnectionError:
@@ -67,7 +80,7 @@ class AIEngine:
     def remove_from_memory(self) -> None:
         """Clears the model(s) from RAM"""
         ollama.generate(model=self.model, keep_alive=0)
-        ollama.generate(model=self.search_term_model, keep_alive=0)
+        ollama.generate(model=self.search_model, keep_alive=0)
 
     # TODO: Add USER_DATA which will be passed in as an argument 'user_data' and added to the system message as 'USER_DATA:'
     def set_system_message(
