@@ -69,8 +69,12 @@ def main():
                 view.print_system_message(
                     f"Searching the web for: [italic]{search_decision['search_term']}[/italic]..."
                 )
-                search_results = search.text_query(search_decision["search_term"])
-                ai.add_search_message(search_results)
+                search_data = search.text_query(search_decision["search_term"])
+                notifications: list[str] = search_data["notifications"]
+                search_result: str = search_data["context"]
+
+                view.print(notifications)
+                ai.add_search_message(search_result)
             else:
                 view.print_system_message("Decided not to search.")
 

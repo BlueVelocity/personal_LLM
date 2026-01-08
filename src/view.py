@@ -15,15 +15,26 @@ class View:
         self.CONSOLE = Console()
         self.history = InMemoryHistory()
 
-    def print(self, text: str) -> None:
-        self.CONSOLE.print(text)
+    def print(self, message: str | list[str]) -> None:
+        if type(message) is list:
+            for i in message:
+                self.CONSOLE.print(i)
+        else:
+            self.CONSOLE.print(message)
 
-    def print_system_message(self, message: str, line_break: bool = False):
-        match line_break:
-            case True:
-                self.CONSOLE.print(f"\n[bold cyan][*][/bold cyan] {message}")
-            case _:
-                self.CONSOLE.print(f"[bold cyan][*][/bold cyan] {message}")
+    def print_system_message(self, message: str | list[str], line_break: bool = False):
+        def print_message(text: str | list[str]) -> None:
+            match line_break:
+                case True:
+                    self.CONSOLE.print(f"\n[bold cyan][*][/bold cyan] {text}")
+                case _:
+                    self.CONSOLE.print(f"[bold cyan][*][/bold cyan] {text}")
+
+        if type(message) is list:
+            for m in message:
+                print_message(m)
+        else:
+            print_message(message)
 
     def print_header_panel(self, model: str, search_model: str) -> None:
         self.CONSOLE.print(
