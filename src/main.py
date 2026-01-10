@@ -1,4 +1,4 @@
-import yaml
+import tomllib
 from pathlib import Path
 
 from view import View
@@ -8,17 +8,17 @@ from cleanup_handler import register_cleanup
 
 
 def get_config():
-    """Retrieves the config.yaml from the root directory"""
+    """Retrieves the config.toml from the root directory"""
 
-    config_path = Path(__file__).resolve().parent.parent / "config.yaml"
+    config_path = Path(__file__).resolve().parent.parent / "config.toml"
 
     try:
-        with open(f"{config_path}", "r") as file:
-            return yaml.safe_load(file)
+        with open(f"{config_path}", "rb") as file:
+            return tomllib.load(file)
     except FileNotFoundError:
         raise FileNotFoundError(
             f"Config file not found at: {config_path}\n"
-            "Have you created 'config.yaml' in the project root?"
+            "Have you created 'config.toml' in the project root?"
         )
 
 
@@ -39,7 +39,7 @@ def main():
     ai.set_system_message(initial_context, initial_instructions, user_data=None)
     ai.load_into_memory()
 
-    search = SearchEngine(search_engine, search_headers)
+    search = SearchEngine(search_engine, user_agent=search_headers)
 
     view = View()
 
