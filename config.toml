@@ -6,8 +6,8 @@ SEARCH = ""
 keep_alive = 60
 
 [system_prompt]
-initial_context = "You are an AI assistant."
-system_instructions = "Maintain natural conversation flow. Be succinct."
+initial_context = "You are an AI assistant with internet access."
+system_instructions = ""
 
 [search_settings]
 # Uncomment desired search engine_name
