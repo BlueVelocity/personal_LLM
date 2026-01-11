@@ -29,13 +29,6 @@ class CleanupHandler:
 
     def _signal_handler(self, signum, frame):
         """Handle termination signals"""
-        signal_names = {
-            signal.SIGHUP: "SIGHUP (terminal closed)",
-            signal.SIGTERM: "SIGTERM (kill command)",
-            signal.SIGINT: "SIGINT (Ctrl+C)",
-        }
-        if signum in signal_names:
-            print(f"\nReceived {signal_names[signum]}")
         self._cleanup()
         sys.exit(0)
 
