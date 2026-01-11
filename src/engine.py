@@ -7,6 +7,8 @@ import json
 
 
 class AIEngine:
+    """Provides connection with model and moderates interaction"""
+
     def __init__(self, model: str, search_model: str, time_limit: int) -> None:
         self.model = model
         self.search_model = search_model
@@ -94,31 +96,56 @@ class AIEngine:
             }
         )
 
-    def add_user_message(self, content: str) -> None:
+    def add_user_message(self, content: str) -> dict[str, str]:
         """
         Adds a user message to the message log
+
         Args:
             content: Content to add to user message
-        """
-        self.messages.append({"role": "user", "content": content})
 
-    def add_assistant_message(self, content: str) -> None:
+        Returns:
+            Dictionary with message role and content
+        """
+        message_info = {"role": "user", "content": content}
+
+        self.messages.append(message_info)
+
+        return message_info
+
+    def add_assistant_message(self, content: str) -> dict[str, str]:
         """
         Adds an assistant message to the message log
+
         Args:
             content: Content to add to assistant message
-        """
-        self.messages.append({"role": "assistant", "content": content})
 
-    def add_search_message(self, content: str) -> None:
+        Returns:
+            Dictionary with message role and content
+        """
+        message_info = {"role": "assistant", "content": content}
+
+        self.messages.append(message_info)
+
+        return message_info
+
+    def add_search_message(self, content: str) -> dict[str, str]:
         """
         Adds a search message to the message log
+
         Args:
             content: Content to add to the search message
+
+        Returns:
+            Dictionary with message role and content
         """
-        self.messages.append(
-            {"role": "user", "content": f"INTERNET SEARCH RESULTS:\n{content}"}
-        )
+        message_info = {
+            "role": "user",
+            "content": f"INTERNET SEARCH RESULTS:\n{content}",
+        }
+
+        self.messages.append(message_info)
+
+        return message_info
 
     def get_response_stream(self) -> Iterator:
         """Returns the Ollama model response stream"""
