@@ -152,6 +152,7 @@ The AI automatically decides when to search based on:
 
 - [ ] Command parser for chat history (`-history list`, `-history open 2`)
 - [ ] Resume previous conversations
+- [ ] Add screenshots and demos with asciinema
 - [ ] Better error handling and user feedback
 - [ ] Docker containerization for easy deployment
 - [ ] Unit tests
