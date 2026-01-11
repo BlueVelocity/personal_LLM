@@ -104,7 +104,7 @@ MAIN = "qwen3:8b"          # Your primary chat model
 SEARCH = ""                 # Leave empty to use MAIN for search decisions
 
 [memory]
-keep_alive = 60             # Minutes to keep model in RAM
+keep_alive = 60             # Seconds to keep model in RAM
 
 [system_prompt]
 initial_context = "You are an AI assistant with internet access."
@@ -122,8 +122,10 @@ headers = "Mozilla/5.0..."  # User agent for DuckDuckGo
 ```
 > You: What's the weather like today?
 [*] Reviewing query...
-[*] Searching the web for: current weather Niagara Falls Ontario
-[*] Model response appears here with live streaming...
+[*] Searching the web for: current weather Niagara Falls Ontario...
+╭─ qwen3:8b ────────────────────────────────────────────────────────────────────────────────╮
+│ Hello! 😊 The weather today in Niagara Falls in Ontario is...                             │
+╰───────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
 ### Commands
@@ -138,12 +140,11 @@ The AI automatically decides when to search based on:
 
 - Whether your question requires current information
 - If the answer is beyond its training data
-- Explicit search requests ("look up...", "google...")
 
 ## How It Works
 
 1. **User Input** → Question entered in terminal
-2. **Search Decision** → Secondary model determines if web search is needed
+2. **Search Decision** → Secondary model determines if web search is needed and the search prompt
 3. **Search (if needed)** → Queries Tavily or DuckDuckGo for current info
 4. **Response Generation** → Primary model generates response with context
 5. **Storage** → Conversation saved to SQLite database
@@ -152,6 +153,7 @@ The AI automatically decides when to search based on:
 
 - [ ] Command parser for chat history (`-history list`, `-history open 2`)
 - [ ] Resume previous conversations
+- [ ] Implement explicit search requests
 - [ ] Add screenshots and demos with asciinema
 - [ ] Better error handling and user feedback
 - [ ] Docker containerization for easy deployment
