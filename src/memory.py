@@ -52,7 +52,7 @@ class Memory:
 
             self.db.commit()
 
-    def _convert_format(self, data: tuple) -> dict[str, str | int]:
+    def _convert_to_chat_data_format(self, data: tuple) -> dict[str, str | int]:
         """
         Converts tuple provided from chat_history into a formatted dictionary
 
@@ -111,7 +111,30 @@ class Memory:
 
         self.db.commit()
 
-    def get_conversations(self) -> list[dict[str, str | int]]:
+    def get_chat_headers(self, limit: int = 0) -> list[dict[str, str]]:
+        """
+        Retrieves the chat titles from memory
+
+        Args:
+            limit: Limit of results. Leave empty for all records
+
+        Returns:
+            List of dictionaries containing [{"date": str, "title": str}, ...]
+        """
+        if limit:
+            chats = reversed(
+                self.cursor.execute(
+                    f"SELECT * FROM chats ORDER BY created DESC LIMIT {limit}"
+                ).fetchall()
+            )
+        else:
+            chats = self.cursor.execute(
+                "SELECT * FROM chats ORDER BY created ASC"
+            ).fetchall()
+
+        return [{"date": chat[1], "title": chat[2]} for chat in chats]
+
+    def get_all_chat_data(self) -> list[dict[str, str | int]]:
         """
         Retrieves all conversations from the database
 
@@ -126,7 +149,7 @@ class Memory:
                 f"SELECT * FROM chat_history WHERE chat_id='{chat[0]}' ORDER BY created ASC"
             ).fetchall()
             for chat_data in chat_history:
-                formatted_chat_data = self._convert_format(chat_data)
+                formatted_chat_data = self._convert_to_chat_data_format(chat_data)
                 formatted_chats.append(formatted_chat_data)
 
         return formatted_chats

@@ -48,8 +48,12 @@ def main():
 
     view.print_header_panel(main_model, search_term_model)
 
+    view.print_system_message("Recent chats...")
+    chat_headers = memory.get_chat_headers(5)
+    view.print_ordered_list([f"{m['date']}: {m['title']}" for m in chat_headers])
+
     def end_session():
-        view.print("[bold red]Ending session...[/bold red]")
+        view.print("[bold red][*] Ending session...[/bold red]")
         ai.remove_from_memory()
 
     register_cleanup(end_session)

@@ -26,19 +26,19 @@ class View:
             self.CONSOLE.print(message)
 
     def print_system_message(self, message: str | list[str], line_break: bool = False):
-        if line_break:
-            self.CONSOLE.print("\n")
-
         if type(message) is list:
-            for m in message:
-                self.CONSOLE.print(f"[bold cyan][*][/bold cyan] {m}")
+            self.print([f"[bold cyan][*][/bold cyan] {m}" for m in message], line_break)
         else:
-            self.CONSOLE.print(f"[bold cyan][*][/bold cyan] {message}")
+            self.print([f"[bold cyan][*][/bold cyan] {message}"])
+
+    def print_ordered_list(self, message_list: list[str], line_break: bool = False):
+        for i, message in enumerate(message_list):
+            self.print([f"[bold cyan][{i}][/bold cyan] {message}"], line_break)
 
     def print_header_panel(self, model: str, search_model: str) -> None:
         self.CONSOLE.print(
             Panel(
-                f"[bold yellow]Chat Session Started[/bold yellow]\n[bold cyan]Model: {model}[/bold cyan]\n[cyan]Search Model: {search_model}[/cyan]\n[yellow]Type 'exit' or 'quit' to end the session.[/yellow]",
+                f"[bold yellow]Chat Session Started[/bold yellow]\n[yellow]Type 'exit' or 'quit' to end the session.[/yellow]\n[bold yellow]Model:[/bold yellow] [bold cyan]{model}[/bold cyan]\n[bold yellow]Search Model:[/bold yellow] [cyan]{search_model}[/cyan]",
                 expand=True,
                 border_style="yellow",
             ),
