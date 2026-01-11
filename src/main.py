@@ -2,6 +2,7 @@ import tomllib
 from pathlib import Path
 
 from view import View
+from memory import Memory
 from engine import AIEngine
 from search import SearchEngine
 from cleanup_handler import register_cleanup
@@ -35,6 +36,8 @@ def main():
     if search_term_model == "" or search_term_model is None:
         search_term_model = main_model
 
+    memory = Memory()
+
     ai = AIEngine(main_model, search_term_model, keep_alive_model)
     ai.set_system_message(initial_context, initial_instructions, user_data=None)
     ai.load_into_memory()
@@ -52,6 +55,9 @@ def main():
     register_cleanup(end_session)
 
     try:
+        current_chat_id: str = ""
+        last_message_data: dict[str, str] = {"role": "", "message": ""}
+
         while True:
             user_input = view.get_user_input()
             if not user_input:
@@ -60,7 +66,20 @@ def main():
             if user_input.lower() in ["exit", "quit"]:
                 break
 
-            ai.add_user_message(user_input)
+            if not current_chat_id:
+                words = user_input.split()
+                truncated_message = " ".join(words[:10])
+                current_chat_id = memory.create_conversation(truncated_message)
+
+            last_message_data = ai.add_user_message(user_input)
+            memory.add_to_conversation(
+                current_chat_id,
+                last_message_data["role"],
+                last_message_data["content"],
+                1,
+            )
+
+            notifications = []
 
             # Search the web
             view.print_system_message("Reviewing query...", True)
@@ -73,15 +92,29 @@ def main():
                 notifications: list[str] = search_data["notifications"]
                 search_result: str = search_data["context"]
 
-                view.print(notifications)
-                ai.add_search_message(search_result)
+                last_message_data = ai.add_search_message(search_result)
+                memory.add_to_conversation(
+                    current_chat_id,
+                    last_message_data["role"],
+                    last_message_data["content"],
+                    0,
+                )
             else:
                 view.print_system_message("Decided not to search.")
 
             # Get and print the response
             response_stream = ai.get_response_stream()
             ai_response = view.live_response(main_model, response_stream)
-            ai.add_assistant_message(ai_response)
+
+            last_message_data = ai.add_assistant_message(ai_response)
+            memory.add_to_conversation(
+                current_chat_id,
+                last_message_data["role"],
+                last_message_data["content"],
+                1,
+            )
+
+            view.print(notifications)
 
     except KeyboardInterrupt:
         pass
