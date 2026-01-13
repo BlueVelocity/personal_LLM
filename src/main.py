@@ -25,20 +25,32 @@ def get_config():
 
 def main():
     config = get_config()
-    main_model = config["models"]["MAIN"]
-    search_term_model = config["models"]["SEARCH"]
-    keep_alive_model = config["memory"]["keep_alive"]
-    initial_context = config["system_prompt"]["initial_context"]
-    initial_instructions = config["system_prompt"]["system_instructions"]
-    search_engine = config["search_settings"]["engine_name"]
-    search_headers = config["search_settings"]["headers"]
+
+    main_model: str = config["models"]["MAIN"]
+    search_term_model: str = config["models"]["SEARCH"]
+
+    keep_alive: int = config["model_settings"]["keep_alive"]
+    main_thinking: bool = config["model_settings"]["keep_alive"]
+    search_thinking: bool = config["model_settings"]["keep_alive"]
+
+    initial_context: str = config["system_prompt"]["initial_context"]
+    initial_instructions: str = config["system_prompt"]["system_instructions"]
+
+    search_engine: str = config["search_settings"]["engine_name"]
+    search_headers: str = config["search_settings"]["headers"]
 
     if search_term_model == "" or search_term_model is None:
         search_term_model = main_model
 
     memory = Memory()
 
-    ai = AIEngine(main_model, search_term_model, keep_alive_model)
+    ai = AIEngine(
+        main_model,
+        search_term_model,
+        keep_alive=keep_alive,
+        main_thinking=main_thinking,
+        search_thinking=search_thinking,
+    )
     ai.set_system_message(initial_context, initial_instructions, user_data=None)
     ai.load_into_memory()
 
@@ -63,7 +75,7 @@ def main():
         last_message_data: dict[str, str] = {"role": "", "message": ""}
 
         while True:
-            user_input = view.get_user_input()
+            user_input: str = view.get_user_input()
             if not user_input:
                 continue
 

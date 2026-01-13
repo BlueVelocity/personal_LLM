@@ -9,10 +9,21 @@ import json
 class AIEngine:
     """Provides connection with model and moderates interaction"""
 
-    def __init__(self, model: str, search_model: str, time_limit: int) -> None:
+    def __init__(
+        self,
+        model: str,
+        search_model: str,
+        keep_alive: int,
+        main_thinking: bool,
+        search_thinking: bool,
+    ) -> None:
         self.model = model
         self.search_model = search_model
-        self.time_limit = time_limit
+
+        self.keep_alive = keep_alive
+        self.main_thinking = main_thinking
+        self.search_thinking = search_thinking
+
         self.engine_options = {"num_ctx": 16384}
         self.models = self.get_models()
         self.client = ollama.Client()
@@ -27,7 +38,7 @@ class AIEngine:
             kwargs={
                 "model": self.model,
                 "options": self.engine_options,
-                "keep_alive": self.time_limit,
+                "keep_alive": self.keep_alive,
             },
             daemon=True,
         )
@@ -40,7 +51,7 @@ class AIEngine:
                 kwargs={
                     "model": self.search_model,
                     "options": self.engine_options,
-                    "keep_alive": self.time_limit,
+                    "keep_alive": self.keep_alive,
                 },
                 daemon=True,
             )
@@ -155,7 +166,8 @@ class AIEngine:
             messages=self.messages,
             options=self.engine_options,
             stream=True,
-            keep_alive=self.time_limit,
+            keep_alive=self.keep_alive,
+            think=self.main_thinking,
         )
         return stream
 
@@ -191,6 +203,7 @@ class AIEngine:
             format="json",
             options=self.engine_options,
             stream=False,
+            think=self.search_thinking,
         )
 
         result = json.loads(response["message"]["content"])

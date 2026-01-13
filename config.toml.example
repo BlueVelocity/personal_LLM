@@ -2,8 +2,10 @@
 MAIN = "qwen3:8b"
 SEARCH = ""
 
-[memory]
+[model_settings]
 keep_alive = 60
+allow_main_thinking = True
+allow_search_thinking = False
 
 [system_prompt]
 initial_context = "You are an AI assistant with internet access."
