@@ -31,9 +31,21 @@ class View:
         else:
             self.print([f"[bold cyan][*][/bold cyan] {message}"])
 
-    def print_ordered_list(self, message_list: list[str], line_break: bool = False):
-        for i, message in enumerate(message_list):
-            self.print([f"[bold cyan][{i}][/bold cyan] {message}"], line_break)
+    def print_ordered_list(
+        self,
+        message_list: list[str],
+        line_break: bool = False,
+        descending: bool = False,
+    ):
+        if descending:
+            for i, message in enumerate(message_list):
+                self.print(
+                    [f"[bold cyan][{len(message_list) - 1 - i}][/bold cyan] {message}"],
+                    line_break,
+                )
+        else:
+            for i, message in enumerate(message_list):
+                self.print([f"[bold cyan][{i}][/bold cyan] {message}"], line_break)
 
     def print_header_panel(self, model: str, search_model: str) -> None:
         self.CONSOLE.print(
@@ -41,6 +53,20 @@ class View:
                 f"[bold yellow]Chat Session Started[/bold yellow]\n[yellow]Type 'exit' or 'quit' to end the session.[/yellow]\n[bold yellow]Model:[/bold yellow] [bold cyan]{model}[/bold cyan]\n[bold yellow]Search Model:[/bold yellow] [cyan]{search_model}[/cyan]",
                 expand=True,
                 border_style="yellow",
+            ),
+        )
+
+    def print_user_message(self, message: str):
+        self.CONSOLE.print(f"\n[bold blue]> You:[/bold blue] {message}\n")
+
+    def print_assistant_message(self, message: str):
+        self.CONSOLE.print(
+            Panel(
+                Markdown(message),
+                title="[bold cyan]AI[/bold cyan]",
+                title_align="left",
+                border_style="cyan",
+                expand=True,
             ),
         )
 

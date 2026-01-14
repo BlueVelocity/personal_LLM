@@ -1,6 +1,7 @@
 import tomllib
 from pathlib import Path
 
+from commands import handle_command
 from view import View
 from memory import Memory
 from engine import AIEngine
@@ -62,7 +63,9 @@ def main():
 
     view.print_system_message("Recent chats...")
     chat_headers = memory.get_chat_headers(5)
-    view.print_ordered_list([f"{m['date']}: {m['title']}" for m in chat_headers])
+    view.print_ordered_list(
+        [f"{m['date']}: {m['title']}" for m in chat_headers], descending=True
+    )
 
     def end_session():
         view.print("[bold red][*] Ending session...[/bold red]")
@@ -81,6 +84,10 @@ def main():
 
             if user_input.lower() in ["exit", "quit"]:
                 break
+
+            if user_input.lower().startswith("/"):
+                handle_command(user_input, view, memory)
+                continue
 
             if not current_chat_id:
                 words = user_input.split()

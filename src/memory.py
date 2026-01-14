@@ -111,7 +111,7 @@ class Memory:
 
         self.db.commit()
 
-    def get_chat_headers(self, limit: int = 0) -> list[dict[str, str]]:
+    def get_chat_headers(self, limit: str | int = 0) -> list[dict[str, str]]:
         """
         Retrieves the chat titles from memory
 
@@ -121,6 +121,9 @@ class Memory:
         Returns:
             List of dictionaries containing [{"date": str, "title": str}, ...]
         """
+        if type(limit) is str:
+            limit = int(limit)
+
         if limit:
             chats = reversed(
                 self.cursor.execute(
@@ -153,3 +156,14 @@ class Memory:
                 formatted_chats.append(formatted_chat_data)
 
         return formatted_chats
+
+    def get_chat_data(self, pos: int):
+        chat_id = self.cursor.execute(
+            "SELECT * FROM chats ORDER BY created DESC"
+        ).fetchall()[pos][0]
+
+        chat_data = self.cursor.execute(
+            f"SELECT * FROM chat_history WHERE chat_id='{chat_id}' ORDER BY created ASC"
+        ).fetchall()
+
+        return chat_data
