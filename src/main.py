@@ -30,8 +30,8 @@ def main():
     search_term_model: str = config["models"]["SEARCH"]
 
     keep_alive: int = config["model_settings"]["keep_alive"]
-    main_thinking: bool = config["model_settings"]["keep_alive"]
-    search_thinking: bool = config["model_settings"]["keep_alive"]
+    main_thinking: bool = config["model_settings"]["allow_main_thinking"]
+    search_thinking: bool = config["model_settings"]["allow_search_thinking"]
 
     initial_context: str = config["system_prompt"]["initial_context"]
     initial_instructions: str = config["system_prompt"]["system_instructions"]
