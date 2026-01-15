@@ -74,7 +74,6 @@ def main():
     register_cleanup(end_session)
 
     try:
-        current_chat_id: str = ""
         last_message_data: dict[str, str] = {"role": "", "message": ""}
 
         while True:
@@ -86,17 +85,16 @@ def main():
                 break
 
             if user_input.lower().startswith("/"):
-                handle_command(user_input, view, memory)
+                handle_command(user_input, view, memory, ai)
                 continue
 
-            if not current_chat_id:
+            if not memory.current_chat_id:
                 words = user_input.split()
                 truncated_message = " ".join(words[:10])
-                current_chat_id = memory.create_conversation(truncated_message)
+                memory.create_conversation(truncated_message)
 
             last_message_data = ai.add_user_message(user_input)
             memory.add_to_conversation(
-                current_chat_id,
                 last_message_data["role"],
                 last_message_data["content"],
                 1,
@@ -117,7 +115,6 @@ def main():
 
                 last_message_data = ai.add_search_message(search_result)
                 memory.add_to_conversation(
-                    current_chat_id,
                     last_message_data["role"],
                     last_message_data["content"],
                     0,
@@ -131,7 +128,6 @@ def main():
 
             last_message_data = ai.add_assistant_message(ai_response)
             memory.add_to_conversation(
-                current_chat_id,
                 last_message_data["role"],
                 last_message_data["content"],
                 1,

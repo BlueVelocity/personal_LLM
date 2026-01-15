@@ -59,11 +59,11 @@ class View:
     def print_user_message(self, message: str):
         self.CONSOLE.print(f"\n[bold blue]> You:[/bold blue] {message}\n")
 
-    def print_assistant_message(self, message: str):
+    def print_assistant_message(self, message: str, name: str):
         self.CONSOLE.print(
             Panel(
                 Markdown(message),
-                title="[bold cyan]AI[/bold cyan]",
+                title=f"[bold cyan]{name}[/bold cyan]",
                 title_align="left",
                 border_style="cyan",
                 expand=True,

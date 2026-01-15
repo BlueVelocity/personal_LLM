@@ -10,7 +10,8 @@ class Memory:
     """Provides connection to the chat history database"""
 
     def __init__(self):
-        self.db_path = Path(__file__).resolve().parent.parent / "memory.db"
+        self.current_chat_id: str = ""
+        self.db_path: Path = Path(__file__).resolve().parent.parent / "memory.db"
         self._initialize_db()
 
     def _generate_id(self, dt: datetime):
@@ -64,7 +65,7 @@ class Memory:
         """
         return {"role": data[2], "content": data[3], "visible": data[4]}
 
-    def create_conversation(self, title: str) -> str:
+    def create_conversation(self, title: str) -> None:
         """
         Creates a new conversation in the database
 
@@ -85,16 +86,11 @@ class Memory:
         )
         self.db.commit()
 
-        return id
-
-    def add_to_conversation(
-        self, id: str, role: str, content: str, visible: int
-    ) -> None:
+    def add_to_conversation(self, role: str, content: str, visible: int) -> None:
         """
         Adds a content to conversation history
 
         Args:
-            id: Id of chat session
             role: Who the content is from (system, assistant, or user)
             content: content to store
             visible: Whether the content is visible to the user or not (0 no, >0 yes)
@@ -106,7 +102,7 @@ class Memory:
 
         self.cursor.execute(
             "INSERT INTO chat_history VALUES (?,?,?,?,?)",
-            (id, datetime_created, role, content, visible),
+            (self.current_chat_id, datetime_created, role, content, visible),
         )
 
         self.db.commit()
@@ -157,10 +153,12 @@ class Memory:
 
         return formatted_chats
 
-    def get_chat_data(self, pos: int):
+    def load_chat(self, pos: int) -> list[tuple[str, str, str, str, int]]:
         chat_id = self.cursor.execute(
             "SELECT * FROM chats ORDER BY created DESC"
         ).fetchall()[pos][0]
+
+        self.current_chat_id = chat_id
 
         chat_data = self.cursor.execute(
             f"SELECT * FROM chat_history WHERE chat_id='{chat_id}' ORDER BY created ASC"
