@@ -13,6 +13,6 @@ system_instructions = ""
 
 [search_settings]
 # Uncomment desired search engine_name
-# engine_name: "ddgs" # Free, slower.
+# engine_name = "ddgs" # Free, slower.
 engine_name = "tavily" # Requires api key in .env with key: TAVILY_KEY
 headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36" # Required for best ddgs experience
