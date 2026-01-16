@@ -4,6 +4,7 @@ import sqlite3
 from datetime import datetime
 import random
 import string
+from models import ChatHeader
 
 
 class Memory:
@@ -53,7 +54,7 @@ class Memory:
 
             self.db.commit()
 
-    def _convert_to_chat_data_format(self, data: tuple) -> dict[str, str | int]:
+    def _convert_to_chat_data_format(self, data: tuple) -> list[dict[str, str] | int]:
         """
         Converts tuple provided from chat_history into a formatted dictionary
 
@@ -63,7 +64,7 @@ class Memory:
         Returns:
             Dictionary with {role: str, content: str, visible: int} fields
         """
-        return {"role": data[2], "content": data[3], "visible": data[4]}
+        return [{"role": data[2], "content": data[3]}, data[4]]
 
     def create_conversation(self, title: str) -> None:
         """
@@ -107,7 +108,7 @@ class Memory:
 
         self.db.commit()
 
-    def get_chat_headers(self, limit: str | int = 0) -> list[dict[str, str]]:
+    def get_chat_headers(self, limit: str | int = 0) -> list[ChatHeader]:
         """
         Retrieves the chat titles from memory
 
@@ -121,37 +122,21 @@ class Memory:
             limit = int(limit)
 
         if limit:
-            chats = reversed(
+            chat_headers = reversed(
                 self.cursor.execute(
                     f"SELECT * FROM chats ORDER BY created DESC LIMIT {limit}"
                 ).fetchall()
             )
         else:
-            chats = self.cursor.execute(
+            chat_headers = self.cursor.execute(
                 "SELECT * FROM chats ORDER BY created ASC"
             ).fetchall()
 
-        return [{"date": chat[1], "title": chat[2]} for chat in chats]
+        chat_list = []
+        for chat_header in chat_headers:
+            chat_list.append(ChatHeader(*chat_header))
 
-    def get_all_chat_data(self) -> list[dict[str, str | int]]:
-        """
-        Retrieves all conversations from the database
-
-        Returns:
-            Formatted chats in a list from least to most recent message [{role: str, content: str, visible: int}, ...]
-        """
-        chats = self.cursor.execute("SELECT * FROM chats").fetchall()
-        formatted_chats = []
-
-        for chat in chats:
-            chat_history = self.cursor.execute(
-                f"SELECT * FROM chat_history WHERE chat_id='{chat[0]}' ORDER BY created ASC"
-            ).fetchall()
-            for chat_data in chat_history:
-                formatted_chat_data = self._convert_to_chat_data_format(chat_data)
-                formatted_chats.append(formatted_chat_data)
-
-        return formatted_chats
+        return chat_list
 
     def load_chat(self, pos: int) -> list[tuple[str, str, str, str, int]]:
         chat_id = self.cursor.execute(

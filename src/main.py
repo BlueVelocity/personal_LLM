@@ -2,6 +2,7 @@ import tomllib
 from pathlib import Path
 
 from commands import handle_command
+from models import ChatHeader
 from view import View
 from memory import Memory
 from engine import AIEngine
@@ -62,9 +63,9 @@ def main():
     view.print_header_panel(main_model, search_term_model)
 
     view.print_system_message("Recent chats...")
-    chat_headers = memory.get_chat_headers(5)
+    chat_list: list[ChatHeader] = memory.get_chat_headers(5)
     view.print_ordered_list(
-        [f"{m['date']}: {m['title']}" for m in chat_headers], descending=True
+        [f"{chat.created}: {chat.title}" for chat in chat_list], descending=True
     )
 
     def end_session():

@@ -56,8 +56,8 @@ def handle_hist(args, view: View, memory: Memory, engine: AIEngine) -> None:
                     args.append(5)
                 view.print_ordered_list(
                     [
-                        f"{m['date']}: {m['title']}"
-                        for m in memory.get_chat_headers(args[1])
+                        f"{chat.created}: {chat.title}"
+                        for chat in memory.get_chat_headers(args[1])
                     ],
                     descending=True,
                 )

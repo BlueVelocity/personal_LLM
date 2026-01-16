@@ -7,3 +7,9 @@ class ChatItem(NamedTuple):
     role: str
     message: str
     visible: int
+
+
+class ChatHeader(NamedTuple):
+    id: str
+    created: str
+    title: str
