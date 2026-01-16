@@ -63,7 +63,7 @@ def main():
     view.print_header_panel(main_model, search_term_model)
 
     view.print_system_message("Recent chats...")
-    chat_list: list[ChatHeader] = memory.get_chat_headers(5)
+    chat_list: list[ChatHeader] = memory.get_chat_list(5)
     view.print_ordered_list(
         [f"{chat.created}: {chat.title}" for chat in chat_list], descending=True
     )
@@ -89,7 +89,7 @@ def main():
                 handle_command(user_input, view, memory, ai)
                 continue
 
-            if not memory.current_chat_id:
+            if not memory.current_id:
                 words = user_input.split()
                 truncated_message = " ".join(words[:10])
                 memory.create_conversation(truncated_message)

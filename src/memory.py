@@ -2,8 +2,6 @@ import os
 from pathlib import Path
 import sqlite3
 from datetime import datetime
-import random
-import string
 from models import ChatHeader
 
 
@@ -11,15 +9,9 @@ class Memory:
     """Provides connection to the chat history database"""
 
     def __init__(self):
-        self.current_chat_id: str = ""
+        self.current_id: int | None = None
         self.db_path: Path = Path(__file__).resolve().parent.parent / "memory.db"
         self._initialize_db()
-
-    def _generate_id(self, dt: datetime):
-        dt_str = dt.strftime("%Y%m%dT%H%M%S%f")
-        random_str = "".join(random.choices(string.ascii_letters + string.digits, k=8))
-
-        return f"{dt_str}{random_str}"
 
     def _initialize_db(self):
         """Checks if database exists and initializes the database by creating tables if it does not"""
@@ -31,24 +23,22 @@ class Memory:
             self.cursor = self.db.cursor()
             self.cursor.execute("PRAGMA foreign_keys = ON")
 
-            # table with ID, TITLE, and CREATED
             self.cursor.execute("""
                 CREATE TABLE chats(
-                    id TEXT PRIMARY KEY, 
+                    id INTEGER PRIMARY KEY, 
                     created TEXT,
                     title TEXT 
                 )
             """)
 
-            # table with CHAT_ID, role (system, user, or assistant), and content
             self.cursor.execute("""
                 CREATE TABLE chat_history(
-                    chat_id TEXT, 
+                    id INTEGER, 
                     created TEXT,
                     role TEXT,
                     content TEXT,
                     visible INTEGER,
-                    FOREIGN KEY (chat_id) REFERENCES chats(id)
+                    FOREIGN KEY (id) REFERENCES chats(id)
                 )
             """)
 
@@ -59,7 +49,7 @@ class Memory:
         Converts tuple provided from chat_history into a formatted dictionary
 
         Args:
-            data: Tuple containing (chat_id, created, role, content, visible)
+            data: Tuple containing (id, created, role, content, visible)
 
         Returns:
             Dictionary with {role: str, content: str, visible: int} fields
@@ -79,13 +69,16 @@ class Memory:
         Example:
             create_conversation("What is the weather tomorrow?")
         """
-        datetime_created = datetime.now()
-        id = self._generate_id(datetime_created)
+        created = datetime.now()
 
         self.cursor.execute(
-            "INSERT INTO chats VALUES(?,?,?)", (id, datetime_created, title)
+            "INSERT INTO chats (created, title) VALUES (?,?)", (created, title)
         )
+        generated_id = self.cursor.lastrowid
+
         self.db.commit()
+
+        self.current_id = generated_id
 
     def add_to_conversation(self, role: str, content: str, visible: int) -> None:
         """
@@ -99,16 +92,16 @@ class Memory:
         Example:
             add_to_conversation("20260111T11471938829023l5ohLg", "user", "What is the weather tomorrow?", 0)
         """
-        datetime_created = datetime.now()
+        created = datetime.now()
 
         self.cursor.execute(
             "INSERT INTO chat_history VALUES (?,?,?,?,?)",
-            (self.current_chat_id, datetime_created, role, content, visible),
+            (self.current_id, created, role, content, visible),
         )
 
         self.db.commit()
 
-    def get_chat_headers(self, limit: str | int = 0) -> list[ChatHeader]:
+    def get_chat_list(self, limit: str | int = 0) -> list[ChatHeader]:
         """
         Retrieves the chat titles from memory
 
@@ -143,7 +136,7 @@ class Memory:
             "SELECT * FROM chats ORDER BY created DESC"
         ).fetchall()[pos][0]
 
-        self.current_chat_id = chat_id
+        self.current_id = chat_id
 
         chat_data = self.cursor.execute(
             f"SELECT * FROM chat_history WHERE chat_id='{chat_id}' ORDER BY created ASC"
