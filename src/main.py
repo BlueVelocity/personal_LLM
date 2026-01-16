@@ -62,11 +62,8 @@ def main():
 
     view.print_header_panel(main_model, search_term_model)
 
-    view.print_system_message("Recent chats...")
     chat_list: list[ChatHeader] = memory.get_chat_list(5)
-    view.print_unordered_list(
-        [f"({chat.id}) {chat.created}: {chat.title}" for chat in chat_list],
-    )
+    view.print_table("Chat History", ["ID", "Date-Time Created", "Title"], chat_list)
 
     def end_session():
         view.print("[bold red][*] Ending session...[/bold red]")

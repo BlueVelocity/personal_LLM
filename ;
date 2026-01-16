@@ -1,4 +1,4 @@
-from typing import Iterator, Iterable
+from typing import Iterator
 from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
@@ -59,28 +59,16 @@ class View:
                 line_break,
             )
 
-    def print_table(
-        self,
-        title: str,
-        columns: list,
-        rows: Iterable[Iterable[str]],
-        line_break=False,
-    ) -> None:
-        if line_break:
-            self.print("\n")
+    def print_table(self, table_headers: list, table_data: list[list | tuple]) -> None:
+        table = Table(title="Chat History")
 
-        table = Table(title=title, style="yellow")
+        for header in table_headers:
+            table.add_column(header, justify="center", style="yellow", no_wrap=True)
 
-        for column_header in columns:
-            table.add_column(
-                column_header, justify="center", style="yellow", no_wrap=True
-            )
+        for data in table_data:
+            table.add_row(*data)
 
-        for data in rows:
-            str_data = (str(item) for item in data)
-            table.add_row(*str_data)
-
-        self.CONSOLE.print(table)
+            self.CONSOLE.print(table)
 
     def print_header_panel(self, model: str, search_model: str) -> None:
         self.CONSOLE.print(
