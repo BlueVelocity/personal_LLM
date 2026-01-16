@@ -40,12 +40,23 @@ class View:
         if descending:
             for i, message in enumerate(message_list):
                 self.print(
-                    [f"[bold cyan][{len(message_list) - 1 - i}][/bold cyan] {message}"],
+                    [f"[bold cyan]{len(message_list) - 1 - i}.)[/bold cyan] {message}"],
                     line_break,
                 )
         else:
             for i, message in enumerate(message_list):
-                self.print([f"[bold cyan][{i}][/bold cyan] {message}"], line_break)
+                self.print([f"[bold cyan]{i}.)[/bold cyan] {message}"], line_break)
+
+    def print_unordered_list(
+        self,
+        message_list: list[str],
+        line_break: bool = False,
+    ):
+        for message in message_list:
+            self.print(
+                [f"[bold cyan] - [/bold cyan] {message}"],
+                line_break,
+            )
 
     def print_header_panel(self, model: str, search_model: str) -> None:
         self.CONSOLE.print(

@@ -64,8 +64,8 @@ def main():
 
     view.print_system_message("Recent chats...")
     chat_list: list[ChatHeader] = memory.get_chat_list(5)
-    view.print_ordered_list(
-        [f"{chat.created}: {chat.title}" for chat in chat_list], descending=True
+    view.print_unordered_list(
+        [f"({chat.id}) {chat.created}: {chat.title}" for chat in chat_list],
     )
 
     def end_session():
