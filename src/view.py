@@ -67,11 +67,18 @@ class View:
         line_break=False,
         col_alignment: list[str] | None = None,
         expand: bool = False,
+        style: str = "yellow",
     ) -> None:
         if line_break:
             self.print("\n")
 
-        table = Table(title=title, style="yellow", expand=expand)
+        table = Table(
+            title=title,
+            style=style,
+            title_style=style + " bold italic",
+            header_style=style + " bold",
+            expand=expand,
+        )
 
         for i, column_header in enumerate(columns):
             alignment = "center"
@@ -87,7 +94,7 @@ class View:
             table.add_column(
                 column_header,
                 justify=alignment,
-                style="yellow",
+                style=style,
                 no_wrap=True,
                 ratio=ratio,
             )

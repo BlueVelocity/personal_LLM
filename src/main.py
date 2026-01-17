@@ -62,13 +62,14 @@ def main():
 
     view.print_header_panel(main_model, search_term_model)
 
-    chat_list: list[ChatHeader] = memory.get_chat_list(5)
+    chat_list: list[ChatHeader] = memory.get_chat_list(3)
     view.print_table(
         "Chat History",
         ["ID", "Date-Time Created", "Title"],
         chat_list,
         col_alignment=["center", "center", "left"],
         expand=True,
+        style="cyan",
     )
 
     def end_session():
