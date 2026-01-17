@@ -63,7 +63,12 @@ def main():
     view.print_header_panel(main_model, search_term_model)
 
     chat_list: list[ChatHeader] = memory.get_chat_list(5)
-    view.print_table("Chat History", ["ID", "Date-Time Created", "Title"], chat_list)
+    view.print_table(
+        "Chat History",
+        ["ID", "Date-Time Created", "Title"],
+        chat_list,
+        col_alignment=["center", "center", "left"],
+    )
 
     def end_session():
         view.print("[bold red][*] Ending session...[/bold red]")
@@ -79,7 +84,7 @@ def main():
             if not user_input:
                 continue
 
-            if user_input.lower() in ["exit", "quit"]:
+            if user_input.lower() == "/exit":
                 break
 
             if user_input.lower().startswith("/"):
@@ -105,7 +110,8 @@ def main():
             search_decision = ai.determine_search()
             if search_decision["needs_search"]:
                 view.print_system_message(
-                    f"Searching the web for: [italic]{search_decision['search_term']}[/italic]..."
+                    f"Searching the web for: [italic]{search_decision['search_term']}[/italic]...",
+                    line_break=True,
                 )
                 search_data = search.text_query(search_decision["search_term"])
                 notifications: list[str] = search_data["notifications"]

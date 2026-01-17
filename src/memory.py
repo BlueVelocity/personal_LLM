@@ -131,15 +131,11 @@ class Memory:
 
         return chat_list
 
-    def load_chat(self, pos: int) -> list[tuple[str, str, str, str, int]]:
-        chat_id = self.cursor.execute(
-            "SELECT * FROM chats ORDER BY created DESC"
-        ).fetchall()[pos][0]
-
-        self.current_id = chat_id
-
-        chat_data = self.cursor.execute(
-            f"SELECT * FROM chat_history WHERE chat_id='{chat_id}' ORDER BY created ASC"
+    def get_chat_records(self, id: int) -> list[tuple[str, str, str, str, int]]:
+        chat_records = self.cursor.execute(
+            f"SELECT * FROM chat_history WHERE id='{id}' ORDER BY created ASC"
         ).fetchall()
 
-        return chat_data
+        self.current_id = self.cursor.lastrowid
+
+        return chat_records

@@ -65,15 +65,21 @@ class View:
         columns: list,
         rows: Iterable[Iterable[str]],
         line_break=False,
+        col_alignment: list[str] | None = None,
     ) -> None:
         if line_break:
             self.print("\n")
 
         table = Table(title=title, style="yellow")
 
-        for column_header in columns:
+        for i, column_header in enumerate(columns):
+            alignment = "center"
+
+            if col_alignment and col_alignment[i] in ["left", "center", "right"]:
+                alignment = col_alignment[i]
+
             table.add_column(
-                column_header, justify="center", style="yellow", no_wrap=True
+                column_header, justify=alignment, style="yellow", no_wrap=True
             )
 
         for data in rows:
@@ -85,7 +91,7 @@ class View:
     def print_header_panel(self, model: str, search_model: str) -> None:
         self.CONSOLE.print(
             Panel(
-                f"[bold yellow]Chat Session Started[/bold yellow]\n[yellow]Type 'exit' or 'quit' to end the session.[/yellow]\n[bold yellow]Model:[/bold yellow] [bold cyan]{model}[/bold cyan]\n[bold yellow]Search Model:[/bold yellow] [cyan]{search_model}[/cyan]",
+                f"[bold yellow]Chat Session Started[/bold yellow]\n[yellow]Type '/help' for a list of commands.[/yellow]\n[bold yellow]Model:[/bold yellow] [bold cyan]{model}[/bold cyan]\n[bold yellow]Search Model:[/bold yellow] [cyan]{search_model}[/cyan]",
                 expand=True,
                 border_style="yellow",
             ),
