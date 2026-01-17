@@ -1,3 +1,4 @@
+from sqlite3 import OperationalError
 from view import View
 from memory import Memory
 from engine import AIEngine
@@ -77,7 +78,12 @@ def handle_hist(args, view: View, memory: Memory, engine: AIEngine) -> None:
                 chat_list: list[ChatHeader] = memory.get_chat_list(args[1])
 
                 view.print_table(
-                    "Chat History", ["ID", "Date-Time Created", "Title"], chat_list
+                    "Chat History",
+                    ["ID", "Date-Time Created", "Title"],
+                    chat_list,
+                    col_alignment=["center", "center", "left"],
+                    expand=True,
+                    style="cyan",
                 )
 
                 view.print_system_message(f"Retrieved {len(chat_list)} records")
@@ -112,6 +118,17 @@ def handle_hist(args, view: View, memory: Memory, engine: AIEngine) -> None:
             #
             #         engine.messages = messages
             #
+            case "delete":
+                try:
+                    args[1] = str(args[1])
+                except IndexError:
+                    view.print_system_message(
+                        "Please provide an argument to delete: int or '*'"
+                    )
+                else:
+                    qty_chats_deleted = memory.delete(args[1])
+                    view.print_system_message(f"Deleted {qty_chats_deleted} chats")
+
             case _:
                 view.print_system_message("Unknown hist request.")
                 handle_help(view)

@@ -87,7 +87,8 @@ class Memory:
         Args:
             role: Who the content is from (system, assistant, or user)
             content: content to store
-            visible: Whether the content is visible to the user or not (0 no, >0 yes)
+            visible: Whether the content is visible to the user or not
+                0 is False, >0 is True
 
         Example:
             add_to_conversation("20260111T11471938829023l5ohLg", "user", "What is the weather tomorrow?", 0)
@@ -100,6 +101,47 @@ class Memory:
         )
 
         self.db.commit()
+
+    def delete(self, id: str | int) -> int:
+        """
+        Deletes a specific chat or all chats (excluding the current one) from history.
+
+        Args:
+            id: The unique identifier of the chat to delete.
+                Pass "*" to delete all chats except the current session.
+
+        Returns:
+            int: The number of chat records successfully deleted from the 'chats' table.
+
+        Note:
+            The current session (self.current_id) cannot be deleted using this method.
+            If the current ID is passed, the function returns 0.
+
+        Example:
+            memory.delete(4)
+            memory.delete("*")  # Clear all except active
+        """
+        id_str = str(id)
+
+        if id_str == str(self.current_id):
+            return 0
+
+        if id_str == "*":
+            query = "DELETE FROM chats WHERE id != ?"
+            params = (self.current_id,)
+        else:
+            query = "DELETE FROM chats WHERE id = ?"
+            params = (id_str,)
+
+        self.cursor.execute(query, params)
+        qty_deleted = self.cursor.rowcount
+
+        history_query = query.replace("FROM chats", "FROM chat_history")
+        self.cursor.execute(history_query, params)
+
+        self.db.commit()
+
+        return qty_deleted
 
     def get_chat_list(self, limit: str | int = 0) -> list[ChatHeader]:
         """
