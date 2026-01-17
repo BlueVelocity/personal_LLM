@@ -68,6 +68,7 @@ def main():
         ["ID", "Date-Time Created", "Title"],
         chat_list,
         col_alignment=["center", "center", "left"],
+        expand=True,
     )
 
     def end_session():
