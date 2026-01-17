@@ -9,7 +9,7 @@ def parse_command(input_str: str) -> tuple[str, list[str]]:
     Parses command and arguments
 
     Args:
-        input_str: Inpurt string
+        input_str: Input command string
 
     Returns:
         Tuple containing the command and a list of its arguments (command: str, args: [str, ...])
@@ -22,11 +22,20 @@ def parse_command(input_str: str) -> tuple[str, list[str]]:
 def handle_command(
     input_str: str, view: View, memory: Memory, engine: AIEngine
 ) -> None:
+    """
+    Handles command request
+
+    Args:
+        input_str: Input command string
+        view: Active view object
+        memory: Active memory object
+        engine: Active engine object
+    """
     command, args = parse_command(input_str)
 
     match command:
         case "help":
-            handle_help(view, args)
+            handle_help(view)
 
         case "hist":
             handle_hist(args, view, memory, engine)
@@ -36,7 +45,13 @@ def handle_command(
             handle_help(view)
 
 
-def handle_help(view: View, args: list | None = None) -> None:
+def handle_help(view: View) -> None:
+    """
+    Lists available commands
+
+    Args:
+        view: Active view object
+    """
     view.print_system_message("Available commands:")
     view.print_unordered_list(
         ["/hist list \\[qty | None]", "/hist load \\[chat_number]", "/exit"]
@@ -44,6 +59,15 @@ def handle_help(view: View, args: list | None = None) -> None:
 
 
 def handle_hist(args, view: View, memory: Memory, engine: AIEngine) -> None:
+    """
+    Handles hist command requests
+
+    Args:
+        args: Arguments to be requested from hist
+        view: Active view object
+        memory: Active memory object
+        engine: Active engine object
+    """
     if args:
         match args[0]:
             case "list":

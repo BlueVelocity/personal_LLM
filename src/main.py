@@ -72,6 +72,7 @@ def main():
     )
 
     def end_session():
+        """Notifies the user the session is ending and unloads the llm from memory"""
         view.print("[bold red][*] Ending session...[/bold red]")
         ai.remove_from_memory()
 

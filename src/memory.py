@@ -132,6 +132,15 @@ class Memory:
         return chat_list
 
     def get_chat_records(self, id: int) -> list[tuple[str, str, str, str, int]]:
+        """
+        Retrieves a list of records by chat id from the database
+
+        Args:
+            id: id number of the chat
+
+        Returns:
+            List of tuples containing individual message data
+        """
         chat_records = self.cursor.execute(
             f"SELECT * FROM chat_history WHERE id='{id}' ORDER BY created ASC"
         ).fetchall()
