@@ -83,7 +83,7 @@ def handle_hist(args, view: View, memory: Memory, engine: AIEngine) -> None:
                     chat_list,
                     col_alignment=["center", "center", "left"],
                     expand=True,
-                    style="cyan",
+                    style="white",
                 )
 
                 view.print_system_message(f"Retrieved {len(chat_list)} records")

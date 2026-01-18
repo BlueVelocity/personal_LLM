@@ -69,7 +69,7 @@ def main():
         chat_list,
         col_alignment=["center", "center", "left"],
         expand=True,
-        style="cyan",
+        style="white",
     )
 
     def end_session():

@@ -108,7 +108,7 @@ class View:
     def print_header_panel(self, model: str, search_model: str) -> None:
         self.CONSOLE.print(
             Panel(
-                f"[bold yellow]Chat Session Started[/bold yellow]\n[yellow]Type '/help' for a list of commands.[/yellow]\n[yellow]Model:[/yellow] [cyan]{model}[/cyan]\n[yellow]Search Model:[/yellow] [cyan]{search_model}[/cyan]",
+                f"[bold yellow]Chat Session Started[/bold yellow]\n[white]Controls: To submit a message, press 'Esc' then 'Enter'.\nType '/help' for a list of commands.[/white]\n[white]Model:[/white] [bold cyan]{model}[/bold cyan]\n[white]Search Model:[/white] [cyan]{search_model}[/cyan]",
                 expand=True,
                 border_style="yellow",
             ),
