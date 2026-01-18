@@ -13,49 +13,44 @@ class View:
     """Controls input and output as well as format for each to the console"""
 
     def __init__(self) -> None:
-        self.CONSOLE = Console()
+        self.CONSOLE = Console(highlight=False)
         self.history = InMemoryHistory()
 
     def print(self, message: str | list[str], line_break: bool = False) -> None:
         if line_break:
-            self.CONSOLE.print("\n")
+            self.CONSOLE.print("")
 
-        if type(message) is list:
-            for i in message:
-                self.CONSOLE.print(i)
-        else:
-            self.CONSOLE.print(message)
+        self.CONSOLE.print(message)
 
-    def print_system_message(self, message: str | list[str], line_break: bool = False):
-        if type(message) is list:
-            self.print([f"[bold cyan][*][/bold cyan] {m}" for m in message], line_break)
-        else:
-            self.print([f"[bold cyan][*][/bold cyan] {message}"])
+    def print_system_message(self, message: str, style: str, line_break: bool = False):
+        self.print(
+            f"[bold {style}][*][/bold {style}][{style}] {message}[/{style}]", line_break
+        )
 
     def print_ordered_list(
         self,
         message_list: list[str],
+        style: str,
         line_break: bool = False,
-        descending: bool = False,
     ):
-        if descending:
-            for i, message in enumerate(message_list):
-                self.print(
-                    [f"[bold cyan]{len(message_list) - 1 - i}.)[/bold cyan] {message}"],
-                    line_break,
-                )
-        else:
-            for i, message in enumerate(message_list):
-                self.print([f"[bold cyan]{i}.)[/bold cyan] {message}"], line_break)
+        for i, message in enumerate(message_list):
+            if i < 10:
+                i = "0" + str(i + 1)
+
+            self.print(
+                f"[bold {style}]{i}.[/bold {style}][{style}] {message}[/{style}]",
+                line_break,
+            )
 
     def print_unordered_list(
         self,
         message_list: list[str],
+        style: str,
         line_break: bool = False,
     ):
         for message in message_list:
             self.print(
-                [f"[bold cyan] - [/bold cyan] {message}"],
+                f"[bold {style}]>>>[/bold {style}][{style}] {message}[{style}]",
                 line_break,
             )
 
@@ -64,10 +59,10 @@ class View:
         title: str,
         columns: list,
         rows: Iterable[Iterable[str]],
+        style: str,
         line_break=False,
         col_alignment: list[str] | None = None,
         expand: bool = False,
-        style: str = "yellow",
     ) -> None:
         if line_break:
             self.print("\n")
@@ -76,7 +71,7 @@ class View:
             title=title,
             style=style,
             title_style=style + " bold italic",
-            header_style=style + " bold",
+            header_style=style,
             expand=expand,
         )
 
@@ -105,25 +100,25 @@ class View:
 
         self.CONSOLE.print(table)
 
-    def print_header_panel(self, model: str, search_model: str) -> None:
+    def print_panel(self, message: str, style: str) -> None:
         self.CONSOLE.print(
             Panel(
-                f"[bold yellow]Chat Session Started[/bold yellow]\n[white]Controls: To submit a message, press 'Esc' then 'Enter'.\nType '/help' for a list of commands.[/white]\n[white]Model:[/white] [bold cyan]{model}[/bold cyan]\n[white]Search Model:[/white] [cyan]{search_model}[/cyan]",
+                message,
                 expand=True,
-                border_style="yellow",
+                border_style=style,
             ),
         )
 
-    def print_user_message(self, message: str):
+    def print_user_message(self, message: str, style: str):
         self.CONSOLE.print(f"\n[bold blue]> You:[/bold blue] {message}\n")
 
-    def print_assistant_message(self, message: str, name: str):
+    def print_assistant_message(self, message: str, name: str, style: str):
         self.CONSOLE.print(
             Panel(
                 Markdown(message),
-                title=f"[bold cyan]{name}[/bold cyan]",
+                title=f"[bold {style}]{name}[/bold {style}]",
                 title_align="left",
-                border_style="cyan",
+                border_style=style,
                 expand=True,
             ),
         )
@@ -145,14 +140,14 @@ class View:
         except Exception:
             raise Exception
 
-    def live_response(self, model_name: str, response_stream: Iterator):
+    def live_response(self, model_name: str, response_stream: Iterator, style: str):
         full_response = ""
         with Live(
             Panel(
                 "Thinking...",
-                title=f"[bold cyan]{model_name}[/bold cyan]",
+                title=f"[bold {style}]{model_name}[/bold {style}]",
                 title_align="left",
-                border_style="cyan",
+                border_style=style,
                 expand=True,
             ),
             console=self.CONSOLE,
@@ -165,9 +160,9 @@ class View:
                     live.update(
                         Panel(
                             Markdown(full_response),
-                            title=f"[bold cyan]{model_name}[/bold cyan]",
+                            title=f"[bold {style}]{model_name}[/bold {style}]",
                             title_align="left",
-                            border_style="cyan",
+                            border_style=style,
                             expand=True,
                         )
                     )

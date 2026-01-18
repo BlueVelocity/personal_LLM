@@ -80,7 +80,7 @@ class SearchEngine:
                         headers = {"User-Agent": self.user_agent}
                         response = requests.get(url, headers=headers, timeout=10)
                         notifications.append(
-                            f"[{i}] [{response.status_code}]: {response.url}"
+                            f"[{response.status_code}]: {response.url}"
                         )
                         soup = BeautifulSoup(response.content, "html.parser")
                         text = soup.get_text(separator="\n", strip=True)

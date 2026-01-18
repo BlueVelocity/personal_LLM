@@ -19,6 +19,8 @@ search_engine = "ddgs" # Free, slower.
 search_headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36" # Required for best ddgs experience
 
 [style_settings]
-system = "yellow"
-assistant = "cyan"
-user = "blue"
+system = "#928374"
+assistant = "#b8bb26"
+user = "#458588"
+header = "#8ec07c"
+warning = "#fb4934"

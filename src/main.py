@@ -2,6 +2,8 @@ import tomllib
 from pathlib import Path
 from typing import Any
 
+from rich import style
+
 from commands import handle_command
 from models import ChatHeader
 from view import View
@@ -70,7 +72,10 @@ def main():
 
     view = View()
 
-    view.print_header_panel(model_config.main_model, model_config.search_model)
+    view.print_panel(
+        f"[bold {style_config.header}]Chat Session Started[/bold {style_config.header}][{style_config.header}]\nControls: To submit a message, press 'Esc' then 'Enter'.\nType '/help' for a list of commands.\nModel: [bold cyan]{model_config.main_model}[/bold cyan]\nSearch Model: [cyan]{model_config.search_model}[/cyan][/{style_config.header}]",
+        style=style_config.header,
+    )
 
     chat_list: list[ChatHeader] = memory.get_chat_list(3)
     view.print_table(
@@ -79,7 +84,7 @@ def main():
         chat_list,
         col_alignment=["center", "center", "left"],
         expand=True,
-        style="white",
+        style=style_config.system,
     )
 
     def end_session():
@@ -101,7 +106,7 @@ def main():
                 break
 
             if user_input.lower().startswith("/"):
-                handle_command(user_input, view, memory, ai)
+                handle_command(user_input, view, memory, ai, style=style_config.system)
                 continue
 
             if not memory.current_id:
@@ -119,12 +124,14 @@ def main():
             notifications = []
 
             # Search the web
-            view.print_system_message("Reviewing query...", True)
+            view.print_system_message(
+                "Reviewing query...", style=style_config.system, line_break=True
+            )
             search_decision = ai.determine_search()
             if search_decision["needs_search"]:
                 view.print_system_message(
                     f"Searching the web for: [italic]{search_decision['search_term']}[/italic]...",
-                    line_break=True,
+                    style=style_config.system,
                 )
                 search_data = search.text_query(search_decision["search_term"])
                 notifications: list[str] = search_data["notifications"]
@@ -137,11 +144,15 @@ def main():
                     visible=0,
                 )
             else:
-                view.print_system_message("Decided not to search.")
+                view.print_system_message(
+                    "Decided not to search.", style=style_config.system
+                )
 
             # Get and print the response
             response_stream = ai.get_response_stream()
-            ai_response = view.live_response(model_config.main_model, response_stream)
+            ai_response = view.live_response(
+                model_config.main_model, response_stream, style=style_config.assistant
+            )
 
             last_message_data = ai.add_assistant_message(ai_response)
             memory.add_to_conversation(
@@ -150,7 +161,7 @@ def main():
                 visible=1,
             )
 
-            view.print(notifications)
+            view.print_ordered_list(notifications, style=style_config.system)
 
     except KeyboardInterrupt:
         pass

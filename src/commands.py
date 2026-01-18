@@ -21,7 +21,7 @@ def parse_command(input_str: str) -> tuple[str, list[str]]:
 
 
 def handle_command(
-    input_str: str, view: View, memory: Memory, engine: AIEngine
+    input_str: str, view: View, memory: Memory, engine: AIEngine, style: str
 ) -> None:
     """
     Handles command request
@@ -36,30 +36,31 @@ def handle_command(
 
     match command:
         case "help":
-            handle_help(view)
+            handle_help(view, style)
 
         case "hist":
-            handle_hist(args, view, memory, engine)
+            handle_hist(args, view, memory, engine, style)
 
         case _:
-            view.print_system_message("Unknown command")
-            handle_help(view)
+            view.print_system_message("Unknown command", style=style)
+            handle_help(view, style)
 
 
-def handle_help(view: View) -> None:
+def handle_help(view: View, style: str) -> None:
     """
     Lists available commands
 
     Args:
         view: Active view object
     """
-    view.print_system_message("Available commands:")
+    view.print_system_message("Available commands:", style=style, line_break=True)
     view.print_unordered_list(
-        ["/hist list \\[qty | None]", "/hist load \\[chat_number]", "/exit"]
+        ["/hist list \\[qty | None]", "/hist load \\[chat_number]", "/exit"],
+        style=style,
     )
 
 
-def handle_hist(args, view: View, memory: Memory, engine: AIEngine) -> None:
+def handle_hist(args, view: View, memory: Memory, engine: AIEngine, style: str) -> None:
     """
     Handles hist command requests
 
@@ -83,10 +84,12 @@ def handle_hist(args, view: View, memory: Memory, engine: AIEngine) -> None:
                     chat_list,
                     col_alignment=["center", "center", "left"],
                     expand=True,
-                    style="white",
+                    style=style,
                 )
 
-                view.print_system_message(f"Retrieved {len(chat_list)} records")
+                view.print_system_message(
+                    f"Retrieved {len(chat_list)} records", style=style
+                )
 
             # case "load":
             #     if len(args) < 1:
@@ -123,15 +126,17 @@ def handle_hist(args, view: View, memory: Memory, engine: AIEngine) -> None:
                     args[1] = str(args[1])
                 except IndexError:
                     view.print_system_message(
-                        "Please provide an argument to delete: int or '*'"
+                        "Please provide an argument to delete: int or '*'", style=style
                     )
                 else:
                     qty_chats_deleted = memory.delete(args[1])
-                    view.print_system_message(f"Deleted {qty_chats_deleted} chats")
+                    view.print_system_message(
+                        f"Deleted {qty_chats_deleted} chats", style=style
+                    )
 
             case _:
-                view.print_system_message("Unknown hist request.")
-                handle_help(view)
+                view.print_system_message("Unknown hist request.", style=style)
+                handle_help(view, style=style)
 
     else:
         print("No args given to hist")
