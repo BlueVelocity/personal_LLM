@@ -73,7 +73,7 @@ def main():
     view = View()
 
     view.print_panel(
-        f"[bold {style_config.header}]Chat Session Started[/bold {style_config.header}][{style_config.header}]\nControls: To submit a message, press 'Esc' then 'Enter'.\nType '/help' for a list of commands.[/{style_config.header}]",
+        f"[bold {style_config.header}]Chat Session Started[/bold {style_config.header}][{style_config.header}]\n > 'Enter': Submit query.\n > 'Alt + Enter': New line.\nType '/help' for a list of commands.[/{style_config.header}]",
         style=style_config.header,
     )
 
@@ -89,7 +89,7 @@ def main():
 
     def end_session():
         """Notifies the user the session is ending and unloads the llm from memory"""
-        view.print("[bold red][*] Ending session...[/bold red]")
+        view.print_system_message("Ending session...", style=style_config.warning)
         ai.remove_from_memory()
 
     register_cleanup(end_session)
@@ -161,8 +161,9 @@ def main():
                 visible=1,
             )
 
-            view.print_system_message("Search sources:", style=style_config.system)
-            view.print_ordered_list(notifications, style=style_config.system)
+            if notifications:
+                view.print_system_message("Search sources:", style=style_config.system)
+                view.print_ordered_list(notifications, style=style_config.system)
 
     except KeyboardInterrupt:
         pass

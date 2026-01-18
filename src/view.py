@@ -1,4 +1,5 @@
 from typing import Iterator, Iterable
+from rich import box
 from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
@@ -7,6 +8,7 @@ from rich.table import Table
 from prompt_toolkit import prompt
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.formatted_text import HTML
+from prompt_toolkit.key_binding import KeyBindings
 
 
 class View:
@@ -71,8 +73,9 @@ class View:
             title=title,
             style=style,
             title_style=style + " bold italic",
-            header_style=style,
+            header_style=style + " bold",
             expand=expand,
+            box=box.ROUNDED,
         )
 
         for i, column_header in enumerate(columns):
@@ -124,21 +127,34 @@ class View:
         )
 
     def get_user_input(self) -> str:
-        try:
+        kb = KeyBindings()
 
-            def prompt_continuation(width, line_number, is_soft_wrap):
-                return "." * (width - 1) + " "
+        @kb.add(
+            "enter"
+        )  # Handles Enter key. Changes default from newline to submit query.
+        def _(event):
+            """Pressing Enter submits the message."""
+            event.current_buffer.validate_and_handle()
 
-            user_input = prompt(
-                HTML("<ansiblue><b>\n> You:</b></ansiblue> "),
-                multiline=True,
-                prompt_continuation=prompt_continuation,
-                history=self.history,
-            ).strip()
+        @kb.add(
+            "escape", "enter"
+        )  # Handles Alt + Enter keys or Esc then Enter keys. Is Escape followed by Enter.
+        def _(event):
+            """Pressing Alt+Enter inserts a new line."""
+            event.current_buffer.insert_text("\n")
 
-            return user_input
-        except Exception:
-            raise Exception
+        def prompt_continuation(width, line_number, is_soft_wrap):
+            return "." * (width - 1) + " "
+
+        user_input = prompt(
+            HTML("<ansiblue><b>\n > You:</b></ansiblue> "),
+            multiline=True,
+            key_bindings=kb,
+            prompt_continuation=prompt_continuation,
+            history=self.history,
+        ).strip()
+
+        return user_input
 
     def live_response(self, model_name: str, response_stream: Iterator, style: str):
         full_response = ""

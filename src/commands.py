@@ -45,10 +45,7 @@ def handle_command(
             handle_hist(args, view, memory, engine, style)
 
         case _:
-            view.print_system_message(
-                f"Unknown command '{command}'", line_break=True, style=style
-            )
-            handle_help(view, style)
+            handle_invalid_entry(view, style=style, entry=command)
 
 
 def handle_help(view: View, style: str) -> None:
@@ -114,11 +111,13 @@ def handle_hist(args, view: View, memory: Memory, engine: AIEngine, style: str) 
     if args:
         match args[0]:
             case "list":
-                if len(args) < 2:
-                    list_hist()
-                else:
-                    list_hist(args[1])
-
+                try:
+                    if len(args) < 2:
+                        list_hist()
+                    else:
+                        list_hist(args[1])
+                except ValueError:
+                    handle_invalid_entry(view, style=style, entry=args[1])
             # case "load":
             #     if len(args) < 1:
             #         view.print_system_message(
@@ -153,9 +152,7 @@ def handle_hist(args, view: View, memory: Memory, engine: AIEngine, style: str) 
                 try:
                     args[1] = str(args[1])
                 except IndexError:
-                    view.print_system_message(
-                        "Please provide an argument to delete: int or '*'", style=style
-                    )
+                    handle_invalid_entry(view, style=style, entry=args[1])
                 else:
                     ids_deleted = memory.delete(args[1])
                     view.print_system_message(
@@ -164,8 +161,16 @@ def handle_hist(args, view: View, memory: Memory, engine: AIEngine, style: str) 
                     )
 
             case _:
-                view.print_system_message(f"Unknown flag '{args[0]}'", style=style)
-                handle_help(view, style=style)
+                handle_invalid_entry(view, style=style, entry=args[0])
 
     else:
         list_hist()
+
+
+def handle_invalid_entry(
+    view: View, style: str, entry: str | int, additional_info: str = ""
+) -> None:
+    view.print_system_message(
+        f"Invalid entry: '{entry}'. {additional_info}", style=style
+    )
+    handle_help(view, style=style)
