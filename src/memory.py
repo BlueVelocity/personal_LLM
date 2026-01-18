@@ -102,7 +102,7 @@ class Memory:
 
         self.db.commit()
 
-    def delete(self, id: str | int) -> int:
+    def delete(self, id: str | int) -> list[int]:
         """
         Deletes a specific chat or all chats (excluding the current one) from history.
 
@@ -111,11 +111,11 @@ class Memory:
                 Pass "*" to delete all chats except the current session.
 
         Returns:
-            int: The number of chat records successfully deleted from the 'chats' table.
+            list[int]: List of chat IDs successfully deleted from the database.
 
         Note:
             The current session (self.current_id) cannot be deleted using this method.
-            If the current ID is passed, the function returns 0.
+            If the current ID is passed, the function returns an empty list.
 
         Example:
             memory.delete(4)
@@ -124,28 +124,35 @@ class Memory:
         id_str = str(id)
 
         if id_str == str(self.current_id):
-            return 0
+            return []
 
         if id_str == "*":
-            query = "DELETE FROM chats WHERE id != ?"
-            params = (self.current_id,)
+            if self.current_id:
+                query = "DELETE FROM chats WHERE id != ?"
+                params = (self.current_id,)
+            else:
+                query = "DELETE FROM chats"
+                params = ()
         else:
             query = "DELETE FROM chats WHERE id = ?"
             params = (id_str,)
 
-        self.cursor.execute(query, params)
-        qty_deleted = self.cursor.rowcount
+        select_query = query.replace("DELETE", "SELECT id")
+        ids_deleted = [
+            row[0] for row in self.cursor.execute(select_query, params).fetchall()
+        ]
 
+        self.cursor.execute(query, params)
         history_query = query.replace("FROM chats", "FROM chat_history")
         self.cursor.execute(history_query, params)
 
         self.db.commit()
 
-        return qty_deleted
+        return ids_deleted
 
     def get_chat_list(self, limit: str | int = 0) -> list[ChatHeader]:
         """
-        Retrieves the chat titles from memory
+        Retrieves the chat ids and titles from memory
 
         Args:
             limit: Limit of results. Leave empty for all records

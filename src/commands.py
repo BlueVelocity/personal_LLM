@@ -1,4 +1,3 @@
-from sqlite3 import OperationalError
 from view import View
 from memory import Memory
 from engine import AIEngine
@@ -31,6 +30,7 @@ def handle_command(
         view: Active view object
         memory: Active memory object
         engine: Active engine object
+        style: Color of text
     """
     command, args = parse_command(input_str)
 
@@ -38,11 +38,16 @@ def handle_command(
         case "help":
             handle_help(view, style)
 
+        case "info":
+            handle_info(view, engine, style)
+
         case "hist":
             handle_hist(args, view, memory, engine, style)
 
         case _:
-            view.print_system_message("Unknown command", style=style)
+            view.print_system_message(
+                f"Unknown command '{command}'", line_break=True, style=style
+            )
             handle_help(view, style)
 
 
@@ -52,11 +57,31 @@ def handle_help(view: View, style: str) -> None:
 
     Args:
         view: Active view object
+        style: Color of text
     """
     view.print_system_message("Available commands:", style=style, line_break=True)
     view.print_unordered_list(
-        ["/hist list \\[qty | None]", "/hist load \\[chat_number]", "/exit"],
+        [
+            "/info #Show info about this session",
+            "/hist list \\[qty | None] #List chat history",
+            "/hist load \\[chat_number] #Load chat from history",
+            "/hist delete \\[chat_number | '*'] #Load chat from history",
+            "/exit #Exit the program",
+        ],
         style=style,
+    )
+
+
+def handle_info(view: View, engine: AIEngine, style: str):
+    """
+    Lists current configuration info
+
+    Args:
+        view: Active view object
+        style: Color of text
+    """
+    view.print_unordered_list(
+        [f"Model: {engine.model}", f"Search Model: {engine.search_model}"], style=style
     )
 
 
@@ -69,27 +94,30 @@ def handle_hist(args, view: View, memory: Memory, engine: AIEngine, style: str) 
         view: Active view object
         memory: Active memory object
         engine: Active engine object
+        style: Color of text
     """
+
+    def list_hist(qty: int = 0):
+        chat_list: list[ChatHeader] = memory.get_chat_list(qty)
+
+        view.print_table(
+            "Chat History",
+            ["ID", "Date-Time Created", "Title"],
+            chat_list,
+            col_alignment=["center", "center", "left"],
+            expand=True,
+            style=style,
+        )
+
+        view.print_system_message(f"Retrieved {len(chat_list)} records", style=style)
+
     if args:
         match args[0]:
             case "list":
                 if len(args) < 2:
-                    args.append(5)
-
-                chat_list: list[ChatHeader] = memory.get_chat_list(args[1])
-
-                view.print_table(
-                    "Chat History",
-                    ["ID", "Date-Time Created", "Title"],
-                    chat_list,
-                    col_alignment=["center", "center", "left"],
-                    expand=True,
-                    style=style,
-                )
-
-                view.print_system_message(
-                    f"Retrieved {len(chat_list)} records", style=style
-                )
+                    list_hist()
+                else:
+                    list_hist(args[1])
 
             # case "load":
             #     if len(args) < 1:
@@ -129,14 +157,15 @@ def handle_hist(args, view: View, memory: Memory, engine: AIEngine, style: str) 
                         "Please provide an argument to delete: int or '*'", style=style
                     )
                 else:
-                    qty_chats_deleted = memory.delete(args[1])
+                    ids_deleted = memory.delete(args[1])
                     view.print_system_message(
-                        f"Deleted {qty_chats_deleted} chats", style=style
+                        f"Deleted {len(ids_deleted)} chats: {', '.join(map(str, ids_deleted))}",
+                        style=style,
                     )
 
             case _:
-                view.print_system_message("Unknown hist request.", style=style)
+                view.print_system_message(f"Unknown flag '{args[0]}'", style=style)
                 handle_help(view, style=style)
 
     else:
-        print("No args given to hist")
+        list_hist()

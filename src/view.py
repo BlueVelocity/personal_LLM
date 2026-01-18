@@ -50,7 +50,7 @@ class View:
     ):
         for message in message_list:
             self.print(
-                f"[bold {style}]>>>[/bold {style}][{style}] {message}[{style}]",
+                f"[bold {style}] > [/bold {style}][{style}] {message}[{style}]",
                 line_break,
             )
 

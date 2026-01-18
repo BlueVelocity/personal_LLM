@@ -73,7 +73,7 @@ def main():
     view = View()
 
     view.print_panel(
-        f"[bold {style_config.header}]Chat Session Started[/bold {style_config.header}][{style_config.header}]\nControls: To submit a message, press 'Esc' then 'Enter'.\nType '/help' for a list of commands.\nModel: [bold cyan]{model_config.main_model}[/bold cyan]\nSearch Model: [cyan]{model_config.search_model}[/cyan][/{style_config.header}]",
+        f"[bold {style_config.header}]Chat Session Started[/bold {style_config.header}][{style_config.header}]\nControls: To submit a message, press 'Esc' then 'Enter'.\nType '/help' for a list of commands.[/{style_config.header}]",
         style=style_config.header,
     )
 
@@ -161,6 +161,7 @@ def main():
                 visible=1,
             )
 
+            view.print_system_message("Search sources:", style=style_config.system)
             view.print_ordered_list(notifications, style=style_config.system)
 
     except KeyboardInterrupt:

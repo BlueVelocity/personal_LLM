@@ -68,7 +68,7 @@ class AIEngine:
             has_main = self.model in model_names
             has_search = self.search_model in model_names
 
-            hint = "\nIs it configured correctly in config.yaml?\nHint: Run 'ollama list' to list installed models"
+            hint = "\nIs it configured correctly in config.toml?\nHint: Run 'ollama list' to list installed models"
             if not has_main and not has_search and self.model != self.search_model:
                 raise Exception(
                     f"Model '{self.model}' and sub-model '{self.search_model}' are not installed.{hint}"
