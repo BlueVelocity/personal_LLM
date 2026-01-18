@@ -1,18 +1,24 @@
-[models]
-MAIN = "qwen3:8b"
-SEARCH = ""
-
 [model_settings]
-keep_alive = 60
-allow_main_thinking = True
-allow_search_thinking = False
+# Models
+main_model = "qwen3:8b"
+search_model = ""
 
-[system_prompt]
+# Model Settings
+keep_alive = 60
+main_thinking = true
+search_thinking = false
+
+# Context and instructions
 initial_context = "You are an AI assistant with internet access."
 system_instructions = ""
 
 [search_settings]
 # Uncomment desired search engine_name
-# engine_name = "ddgs" # Free, slower.
-engine_name = "tavily" # Requires api key in .env with key: TAVILY_KEY
-headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36" # Required for best ddgs experience
+search_engine = "ddgs" # Free, slower.
+# search_engine = "tavily" # Requires api key in .env with key: TAVILY_KEY
+search_headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36" # Required for best ddgs experience
+
+[style_settings]
+system = "yellow"
+assistant = "cyan"
+user = "blue"

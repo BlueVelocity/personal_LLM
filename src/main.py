@@ -1,5 +1,6 @@
 import tomllib
 from pathlib import Path
+from typing import Any
 
 from commands import handle_command
 from models import ChatHeader
@@ -8,6 +9,7 @@ from memory import Memory
 from engine import AIEngine
 from search import SearchEngine
 from cleanup_handler import register_cleanup
+from models import ModelConfig, SearchConfig, StyleConfig
 
 
 def get_config():
@@ -17,7 +19,7 @@ def get_config():
 
     try:
         with open(f"{config_path}", "rb") as file:
-            return tomllib.load(file)
+            return parse_config(tomllib.load(file))
     except FileNotFoundError:
         raise FileNotFoundError(
             f"Config file not found at: {config_path}\n"
@@ -25,42 +27,50 @@ def get_config():
         )
 
 
+def parse_config(
+    config_data: dict[str, Any],
+) -> tuple[ModelConfig, SearchConfig, StyleConfig]:
+    """Parses the config and sorts into descriptive objects"""
+
+    if (
+        config_data["model_settings"]["search_model"] == ""
+        or config_data["model_settings"]["main_model"] is None
+    ):
+        config_data["model_settings"]["search_model"] = config_data["model_settings"][
+            "main_model"
+        ]
+
+    model_config: ModelConfig = ModelConfig(**config_data["model_settings"])
+    search_config: SearchConfig = SearchConfig(**config_data["search_settings"])
+    style_config: StyleConfig = StyleConfig(**config_data["style_settings"])
+
+    return (model_config, search_config, style_config)
+
+
 def main():
-    config = get_config()
-
-    main_model: str = config["models"]["MAIN"]
-    search_term_model: str = config["models"]["SEARCH"]
-
-    keep_alive: int = config["model_settings"]["keep_alive"]
-    main_thinking: bool = config["model_settings"]["allow_main_thinking"]
-    search_thinking: bool = config["model_settings"]["allow_search_thinking"]
-
-    initial_context: str = config["system_prompt"]["initial_context"]
-    initial_instructions: str = config["system_prompt"]["system_instructions"]
-
-    search_engine: str = config["search_settings"]["engine_name"]
-    search_headers: str = config["search_settings"]["headers"]
-
-    if search_term_model == "" or search_term_model is None:
-        search_term_model = main_model
+    model_config, search_config, style_config = get_config()
 
     memory = Memory()
 
     ai = AIEngine(
-        main_model,
-        search_term_model,
-        keep_alive=keep_alive,
-        main_thinking=main_thinking,
-        search_thinking=search_thinking,
+        model_config.main_model,
+        model_config.search_model,
+        keep_alive=model_config.keep_alive,
+        main_thinking=model_config.main_thinking,
+        search_thinking=model_config.search_thinking,
     )
-    ai.set_system_message(initial_context, initial_instructions, user_data=None)
+    ai.set_system_message(
+        model_config.initial_context, model_config.system_instructions, user_data=None
+    )
     ai.load_into_memory()
 
-    search = SearchEngine(search_engine, user_agent=search_headers)
+    search = SearchEngine(
+        search_config.search_engine, user_agent=search_config.search_headers
+    )
 
     view = View()
 
-    view.print_header_panel(main_model, search_term_model)
+    view.print_header_panel(model_config.main_model, model_config.search_model)
 
     chat_list: list[ChatHeader] = memory.get_chat_list(3)
     view.print_table(
@@ -103,7 +113,7 @@ def main():
             memory.add_to_conversation(
                 last_message_data["role"],
                 last_message_data["content"],
-                1,
+                visible=1,
             )
 
             notifications = []
@@ -124,20 +134,20 @@ def main():
                 memory.add_to_conversation(
                     last_message_data["role"],
                     last_message_data["content"],
-                    0,
+                    visible=0,
                 )
             else:
                 view.print_system_message("Decided not to search.")
 
             # Get and print the response
             response_stream = ai.get_response_stream()
-            ai_response = view.live_response(main_model, response_stream)
+            ai_response = view.live_response(model_config.main_model, response_stream)
 
             last_message_data = ai.add_assistant_message(ai_response)
             memory.add_to_conversation(
                 last_message_data["role"],
                 last_message_data["content"],
-                1,
+                visible=1,
             )
 
             view.print(notifications)
