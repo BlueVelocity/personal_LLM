@@ -119,35 +119,18 @@ def handle_hist(args, view: View, memory: Memory, engine: AIEngine, style: str) 
                 except ValueError:
                     handle_invalid_entry(view, style=style, entry=args[1])
             # case "load":
-            #     if len(args) < 1:
-            #         view.print_system_message(
-            #             "Please specify chat to load: /hist load \\[chat_number]"
-            #         )
-            #     else:
-            #         chat_data: list[tuple[str, str, str, str, int]] = memory.load_chat(
-            #             int(args[1])
-            #         )
+            #     try:
+            #         if len(args) < 2:
+            #             handle_invalid_entry(view, style=style, entry="''")
+            #         else:
             #
-            #         messages = []
+            #             # Get the chat information
+            #             # Set the chat information in memory
+            #             # Print the chat information
             #
-            #         # Reconstruct chat
-            #         for chat_item in chat_data:
-            #             data = ChatItem(*chat_item)
-            #
-            #             messages.append({"role": data.role, "content": data.message})
-            #
-            #             if data.visible > 0:
-            #                 match data.role:
-            #                     case "user":
-            #                         view.print_user_message(data.message)
-            #
-            #                     case "assistant":
-            #                         view.print_assistant_message(
-            #                             data.message, engine.model
-            #                         )
-            #
-            #         engine.messages = messages
-            #
+            #     except ValueError:
+            #         handle_invalid_entry(view, style=style, entry=args[1])
+
             case "delete":
                 try:
                     args[1] = str(args[1])

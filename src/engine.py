@@ -27,7 +27,6 @@ class AIEngine:
         self.engine_options = {"num_ctx": 16384}
         self.models = self.get_models()
         self.client = ollama.Client()
-        self.messages = []
 
         self.load_into_memory()
 
@@ -96,74 +95,12 @@ class AIEngine:
         ollama.generate(model=self.model, keep_alive=0)
         ollama.generate(model=self.search_model, keep_alive=0)
 
-    # TODO: Add USER_DATA which will be passed in as an argument 'user_data' and added to the system message as 'USER_DATA:'
-    def set_system_message(
-        self, initial_context: str, initial_instructions: str, user_data: None
-    ) -> None:
-        self.messages.append(
-            {
-                "role": "system",
-                "content": f"CONTEXT: {initial_context}\nCURRENT DATE: {date.today()}\nINSTRUCTIONS: {initial_instructions}",
-            }
-        )
-
-    def add_user_message(self, content: str) -> dict[str, str]:
-        """
-        Adds a user message to the message log
-
-        Args:
-            content: Content to add to user message
-
-        Returns:
-            Dictionary with message role and content
-        """
-        message_info = {"role": "user", "content": content}
-
-        self.messages.append(message_info)
-
-        return message_info
-
-    def add_assistant_message(self, content: str) -> dict[str, str]:
-        """
-        Adds an assistant message to the message log
-
-        Args:
-            content: Content to add to assistant message
-
-        Returns:
-            Dictionary with message role and content
-        """
-        message_info = {"role": "assistant", "content": content}
-
-        self.messages.append(message_info)
-
-        return message_info
-
-    def add_search_message(self, content: str) -> dict[str, str]:
-        """
-        Adds a search message to the message log
-
-        Args:
-            content: Content to add to the search message
-
-        Returns:
-            Dictionary with message role and content
-        """
-        message_info = {
-            "role": "user",
-            "content": f"INTERNET SEARCH RESULTS:\n{content}",
-        }
-
-        self.messages.append(message_info)
-
-        return message_info
-
-    def get_response_stream(self) -> Iterator:
+    def get_response_stream(self, messages: list[dict[str, str]]) -> Iterator:
         """Returns the Ollama model response stream"""
 
         stream = self.client.chat(
             model=self.model,
-            messages=self.messages,
+            messages=messages,
             options=self.engine_options,
             stream=True,
             keep_alive=self.keep_alive,
@@ -171,9 +108,9 @@ class AIEngine:
         )
         return stream
 
-    def determine_search(self) -> dict[str, str]:
+    def determine_search(self, messages: list[dict[str, str]]) -> dict[str, str]:
         """Determines if search is required given the current chat context"""
-        copy_of_messages = copy.deepcopy(self.messages)
+        copy_of_messages = copy.deepcopy(messages)
 
         copy_of_messages[0] = {
             "role": "system",
@@ -193,7 +130,7 @@ class AIEngine:
             "role": "user",
             "content": f"""
             LATEST_QUERY:
-            {self.messages[-1]}
+            {messages[-1]}
             """,
         }
 

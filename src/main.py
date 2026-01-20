@@ -1,9 +1,6 @@
 import tomllib
 from pathlib import Path
 from typing import Any
-
-from rich import style
-
 from commands import handle_command
 from models import ChatHeader
 from view import View
@@ -61,9 +58,6 @@ def main():
         main_thinking=model_config.main_thinking,
         search_thinking=model_config.search_thinking,
     )
-    ai.set_system_message(
-        model_config.initial_context, model_config.system_instructions, user_data=None
-    )
     ai.load_into_memory()
 
     search = SearchEngine(
@@ -71,12 +65,12 @@ def main():
     )
 
     view = View()
-
     view.print_panel(
         f"[bold {style_config.header}]Chat Session Started[/bold {style_config.header}][{style_config.header}]\n > 'Enter': Submit query.\n > 'Alt + Enter': New line.\nType '/help' for a list of commands.[/{style_config.header}]",
         style=style_config.header,
     )
 
+    # Print history
     chat_list: list[ChatHeader] = memory.get_chat_list(3)
     view.print_table(
         "Chat History",
@@ -95,8 +89,6 @@ def main():
     register_cleanup(end_session)
 
     try:
-        last_message_data: dict[str, str] = {"role": "", "message": ""}
-
         while True:
             user_input: str = view.get_user_input()
             if not user_input:
@@ -113,13 +105,11 @@ def main():
                 words = user_input.split()
                 truncated_message = " ".join(words[:10])
                 memory.create_conversation(truncated_message)
+                memory.add_system_message(
+                    model_config.initial_context, model_config.system_instructions
+                )
 
-            last_message_data = ai.add_user_message(user_input)
-            memory.add_to_conversation(
-                last_message_data["role"],
-                last_message_data["content"],
-                visible=1,
-            )
+            memory.add_user_message(user_input)
 
             notifications = []
 
@@ -127,7 +117,7 @@ def main():
             view.print_system_message(
                 "Reviewing query...", style=style_config.system, line_break=True
             )
-            search_decision = ai.determine_search()
+            search_decision = ai.determine_search(memory.get_formatted_chat_history())
             if search_decision["needs_search"]:
                 view.print_system_message(
                     f"Searching the web for: [italic]{search_decision['search_term']}[/italic]...",
@@ -137,29 +127,21 @@ def main():
                 notifications: list[str] = search_data["notifications"]
                 search_result: str = search_data["context"]
 
-                last_message_data = ai.add_search_message(search_result)
-                memory.add_to_conversation(
-                    last_message_data["role"],
-                    last_message_data["content"],
-                    visible=0,
-                )
+                memory.add_search_message(search_result)
             else:
                 view.print_system_message(
                     "Decided not to search.", style=style_config.system
                 )
 
             # Get and print the response
-            response_stream = ai.get_response_stream()
+            response_stream = ai.get_response_stream(
+                memory.get_formatted_chat_history()
+            )
             ai_response = view.live_response(
                 model_config.main_model, response_stream, style=style_config.assistant
             )
 
-            last_message_data = ai.add_assistant_message(ai_response)
-            memory.add_to_conversation(
-                last_message_data["role"],
-                last_message_data["content"],
-                visible=1,
-            )
+            memory.add_assistant_message(ai_response)
 
             if notifications:
                 view.print_system_message("Search sources:", style=style_config.system)

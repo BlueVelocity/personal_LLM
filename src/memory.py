@@ -2,7 +2,8 @@ import os
 from pathlib import Path
 import sqlite3
 from datetime import datetime
-from models import ChatHeader
+from models import ChatHeader, ChatItem
+from datetime import date
 
 
 class Memory:
@@ -80,7 +81,7 @@ class Memory:
 
         self.current_id = generated_id
 
-    def add_to_conversation(self, role: str, content: str, visible: int) -> None:
+    def _add_to_conversation(self, role: str, content: str, visible: int) -> None:
         """
         Adds a content to conversation history
 
@@ -101,6 +102,46 @@ class Memory:
         )
 
         self.db.commit()
+
+    def add_user_message(self, content: str):
+        """
+        Adds a user message to the message log
+
+        Args:
+            content: Content to add to user message
+        """
+        self._add_to_conversation("user", content, 1)
+
+    def add_assistant_message(self, content: str):
+        """
+        Adds a assistant message to the message log
+
+        Args:
+            content: Content to add to assistant message
+        """
+        self._add_to_conversation("assistant", content, 1)
+
+    def add_system_message(
+        self, initial_context: str, initial_instructions: str
+    ) -> None:
+        """
+        Adds a system message to the message log
+
+        Args:
+            content: Content to add to assistant message
+        """
+        content = f"CONTEXT: {initial_context}\nCURRENT DATE: {date.today()}\nINSTRUCTIONS: {initial_instructions}"
+        self._add_to_conversation("system", content, 0)
+
+    def add_search_message(self, content: str):
+        """
+        Adds a search message to the message log
+
+        Args:
+            content: Content to add to the search message
+        """
+        content = f"INTERNET SEARCH RESULTS:\n{content}"
+        self._add_to_conversation("user", content, 0)
 
     def delete(self, id: str | int) -> list[int]:
         """
@@ -180,7 +221,7 @@ class Memory:
 
         return chat_list
 
-    def get_chat_records(self, id: int) -> list[tuple[str, str, str, str, int]]:
+    def _get_chat_records(self, id: int) -> list[ChatItem]:
         """
         Retrieves a list of records by chat id from the database
 
@@ -194,6 +235,29 @@ class Memory:
             f"SELECT * FROM chat_history WHERE id='{id}' ORDER BY created ASC"
         ).fetchall()
 
-        self.current_id = self.cursor.lastrowid
+        output = [ChatItem(*row) for row in chat_records]
 
-        return chat_records
+        print(output)
+        print(1)
+
+        return output
+
+    def get_formatted_chat_history(self) -> list[dict[str, str]]:
+        """
+        Retrieves a full conversation history by ids_deleted
+
+        Returns:
+            List of dictionaries with roles and content, ollama format
+        """
+
+        def format_history(item: ChatItem) -> dict[str, str]:
+            return {"role": item.role, "content": item.message}
+
+        if self.current_id is None:
+            return []
+        else:
+            formatted_chat_history = list(
+                map(format_history, self._get_chat_records(self.current_id))
+            )
+
+        return formatted_chat_history
