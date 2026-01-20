@@ -5,6 +5,9 @@ from tavily import TavilyClient
 from ddgs import DDGS
 import requests
 from bs4 import BeautifulSoup
+import logging
+
+logging.getLogger("bs4").setLevel(logging.ERROR)
 
 
 class SearchResult(TypedDict):
@@ -66,59 +69,43 @@ class SearchEngine:
         Args:
             query: Search query
         """
+        with DDGS() as ddgs:
+            results: list[dict] = []
+            notifications: list[str] = []
+            context: str = ""
 
-        proxies = "socks5://127.0.0.1:9050"
+            for i, result in enumerate(
+                ddgs.text(query, max_results=3, backend="duckduckgo")
+            ):
+                url = result.get("href")
+                if url:
+                    try:
+                        headers = {"User-Agent": self.user_agent}
+                        response = requests.get(url, headers=headers, timeout=10)
+                        notifications.append(
+                            f"[{response.status_code}]: {response.url}"
+                        )
+                        soup = BeautifulSoup(response.content, "html.parser")
+                        text = soup.get_text(separator="\n", strip=True)
+                        results.append(
+                            {
+                                "reference_num": f"[{i}]",
+                                "title": result.get("title"),
+                                "url": url,
+                                "full_text": text,
+                            }
+                        )
+                    except:
+                        results.append(
+                            {
+                                "reference_num": f"[{i}]",
+                                "title": result.get("title"),
+                                "url": url,
+                                "full_text": "Unable to fetch",
+                            }
+                        )
 
-        try:
-            response = requests.get(
-                "https://check.torproject.org/api/ip",
-                proxies={"https": "socks5://127.0.0.1:9050"},
-                timeout=10,
-            )
-            data = response.json()
-            print(f"Connected via Tor: {data.get('IsTor', False)}")
-            print(f"IP: {data.get('IP')}")
-        except Exception as e:
-            print(f"Connection failed: {e}")
+            for result in results:
+                context += f"{result['reference_num']}: Title: {result['title']}\nURL: {result['url']}\n{result['full_text'][:5000]}...\n\n"
 
-        else:
-            with DDGS(proxy=proxies) as ddgs:
-                results: list[dict] = []
-                notifications: list[str] = []
-                context: str = ""
-
-                for i, result in enumerate(
-                    ddgs.text(query, max_results=3, backend="duckduckgo")
-                ):
-                    url = result.get("href")
-                    if url:
-                        try:
-                            headers = {"User-Agent": self.user_agent}
-                            response = requests.get(url, headers=headers, timeout=10)
-                            notifications.append(
-                                f"[{response.status_code}]: {response.url}"
-                            )
-                            soup = BeautifulSoup(response.content, "html.parser")
-                            text = soup.get_text(separator="\n", strip=True)
-                            results.append(
-                                {
-                                    "reference_num": f"[{i}]",
-                                    "title": result.get("title"),
-                                    "url": url,
-                                    "full_text": text,
-                                }
-                            )
-                        except:
-                            results.append(
-                                {
-                                    "reference_num": f"[{i}]",
-                                    "title": result.get("title"),
-                                    "url": url,
-                                    "full_text": "Unable to fetch",
-                                }
-                            )
-
-                for result in results:
-                    context += f"{result['reference_num']}: Title: {result['title']}\nURL: {result['url']}\n{result['full_text'][:5000]}...\n\n"
-
-                return {"notifications": notifications, "context": context}
+            return {"notifications": notifications, "context": context}

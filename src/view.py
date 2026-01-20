@@ -187,6 +187,9 @@ class View:
         return full_response
 
     def reconstruct_history(self, chat_items: list[ChatItem], style: str):
+        self.print_system_message(
+            "Reconstructing History...", style=style, line_break=True
+        )
         if chat_items:
             for item in chat_items:
                 if item.role == "user":

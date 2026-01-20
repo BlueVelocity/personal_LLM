@@ -1,6 +1,7 @@
 import tomllib
 from pathlib import Path
 from typing import Any
+
 from commands import handle_command
 from models import ChatHeader
 from view import View

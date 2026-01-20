@@ -3,6 +3,7 @@ from pathlib import Path
 import sqlite3
 from datetime import datetime
 from models import ChatHeader, ChatItem
+from exceptions import ChatNotFoundError
 from datetime import date
 
 
@@ -228,10 +229,10 @@ class Memory:
 
     def set_current_id(self, id: int) -> None:
         if id == self.current_id:
-            raise Exception("ID currently loaded")
+            raise ChatNotFoundError("ID currently loaded")
 
         if id not in self._get_all_chat_ids():
-            raise Exception("ID does not exist")
+            raise ChatNotFoundError("ID does not exist")
 
         self.current_id = id
 

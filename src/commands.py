@@ -2,6 +2,7 @@ from view import View
 from memory import Memory
 from engine import AIEngine
 from models import ChatItem, ChatHeader
+from exceptions import ChatNotFoundError
 
 
 def parse_command(input_str: str) -> tuple[str, list[str]]:
@@ -123,13 +124,12 @@ def handle_hist(args, view: View, memory: Memory, engine: AIEngine, style: str) 
                     if len(args) < 2:
                         handle_invalid_entry(view, style=style, entry=" ")
                     else:
-                        # Check if current id, if so, print response and do nothing
                         try:
                             memory.set_current_id(int(args[1]))
                             view.reconstruct_history(
                                 memory.get_visible_chat_history(), style=style
                             )
-                        except Exception as e:
+                        except (ValueError, ChatNotFoundError) as e:
                             view.print_system_message(str(e), style=style)
 
                 except ValueError:
