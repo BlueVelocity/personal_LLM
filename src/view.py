@@ -10,6 +10,8 @@ from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.key_binding import KeyBindings
 
+from models import ChatItem
+
 
 class View:
     """Controls input and output as well as format for each to the console"""
@@ -113,7 +115,7 @@ class View:
         )
 
     def print_user_message(self, message: str, style: str):
-        self.CONSOLE.print(f"\n[bold blue]> You:[/bold blue] {message}\n")
+        self.CONSOLE.print(f"\n[bold {style}] > You:[/bold {style}] {message}\n")
 
     def print_assistant_message(self, message: str, name: str, style: str):
         self.CONSOLE.print(
@@ -183,3 +185,11 @@ class View:
                         )
                     )
         return full_response
+
+    def reconstruct_history(self, chat_items: list[ChatItem], style: str):
+        if chat_items:
+            for item in chat_items:
+                if item.role == "user":
+                    self.print_user_message(item.message, style=style)
+                else:
+                    self.print_assistant_message(item.message, "Past AI", style=style)

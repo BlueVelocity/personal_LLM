@@ -118,18 +118,22 @@ def handle_hist(args, view: View, memory: Memory, engine: AIEngine, style: str) 
                         list_hist(args[1])
                 except ValueError:
                     handle_invalid_entry(view, style=style, entry=args[1])
-            # case "load":
-            #     try:
-            #         if len(args) < 2:
-            #             handle_invalid_entry(view, style=style, entry="''")
-            #         else:
-            #
-            #             # Get the chat information
-            #             # Set the chat information in memory
-            #             # Print the chat information
-            #
-            #     except ValueError:
-            #         handle_invalid_entry(view, style=style, entry=args[1])
+            case "load":
+                try:
+                    if len(args) < 2:
+                        handle_invalid_entry(view, style=style, entry=" ")
+                    else:
+                        # Check if current id, if so, print response and do nothing
+                        try:
+                            memory.set_current_id(int(args[1]))
+                            view.reconstruct_history(
+                                memory.get_visible_chat_history(), style=style
+                            )
+                        except Exception as e:
+                            view.print_system_message(str(e), style=style)
+
+                except ValueError:
+                    handle_invalid_entry(view, style=style, entry=args[1])
 
             case "delete":
                 try:

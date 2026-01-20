@@ -221,6 +221,20 @@ class Memory:
 
         return chat_list
 
+    def _get_all_chat_ids(self) -> list[int]:
+        ids = [row[0] for row in self.cursor.execute("SELECT * FROM chats").fetchall()]
+
+        return ids
+
+    def set_current_id(self, id: int) -> None:
+        if id == self.current_id:
+            raise Exception("ID currently loaded")
+
+        if id not in self._get_all_chat_ids():
+            raise Exception("ID does not exist")
+
+        self.current_id = id
+
     def _get_chat_records(self, id: int) -> list[ChatItem]:
         """
         Retrieves a list of records by chat id from the database
@@ -237,17 +251,14 @@ class Memory:
 
         output = [ChatItem(*row) for row in chat_records]
 
-        print(output)
-        print(1)
-
         return output
 
-    def get_formatted_chat_history(self) -> list[dict[str, str]]:
+    def get_llm_formatted_chat_history(self) -> list[dict[str, str]]:
         """
-        Retrieves a full conversation history by ids_deleted
+        Retrieves chat logs in llm format
 
         Returns:
-            List of dictionaries with roles and content, ollama format
+            List of dictionaries with {role, content} ollama format
         """
 
         def format_history(item: ChatItem) -> dict[str, str]:
@@ -261,3 +272,24 @@ class Memory:
             )
 
         return formatted_chat_history
+
+    def get_visible_chat_history(
+        self,
+    ) -> list[ChatItem]:
+        """
+        Retrieves chat logs in chat reconstruction format for display
+
+        Returns:
+            List of dictionaries with [{roles, content}, visible]
+        """
+
+        chat_history = []
+
+        if self.current_id is None:
+            return []
+        else:
+            for item in self._get_chat_records(self.current_id):
+                if int(item.visible):
+                    chat_history.append(item)
+
+        return chat_history

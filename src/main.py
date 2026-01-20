@@ -117,7 +117,9 @@ def main():
             view.print_system_message(
                 "Reviewing query...", style=style_config.system, line_break=True
             )
-            search_decision = ai.determine_search(memory.get_formatted_chat_history())
+            search_decision = ai.determine_search(
+                memory.get_llm_formatted_chat_history()
+            )
             if search_decision["needs_search"]:
                 view.print_system_message(
                     f"Searching the web for: [italic]{search_decision['search_term']}[/italic]...",
@@ -135,7 +137,7 @@ def main():
 
             # Get and print the response
             response_stream = ai.get_response_stream(
-                memory.get_formatted_chat_history()
+                memory.get_llm_formatted_chat_history()
             )
             ai_response = view.live_response(
                 model_config.main_model, response_stream, style=style_config.assistant
