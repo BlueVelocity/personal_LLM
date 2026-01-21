@@ -75,7 +75,7 @@ def main():
     chat_list: list[ChatHeader] = memory.get_chat_list(3)
     view.print_table(
         "Chat History",
-        ["ID", "Date-Time Created", "Title"],
+        ["ID", "Last Updated", "Title"],
         chat_list,
         col_alignment=["center", "center", "left"],
         expand=True,

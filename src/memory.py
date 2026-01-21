@@ -46,17 +46,23 @@ class Memory:
 
             self.db.commit()
 
-    def _convert_to_chat_data_format(self, data: tuple) -> list[dict[str, str] | int]:
+    @staticmethod
+    def _update_chat_date(func):
         """
-        Converts tuple provided from chat_history into a formatted dictionary
-
-        Args:
-            data: Tuple containing (id, created, role, content, visible)
-
-        Returns:
-            Dictionary with {role: str, content: str, visible: int} fields
+        Updates the created field of the current chat to the current datetime
         """
-        return [{"role": data[2], "content": data[3]}, data[4]]
+
+        def wrapper(self, *args):
+            func(self, *args)
+
+            updated_datetime = datetime.now()
+            self.cursor.execute(
+                "UPDATE chats SET created = ? WHERE id=?",
+                (updated_datetime, self.current_id),
+            )
+            self.db.commit()
+
+        return wrapper
 
     def create_conversation(self, title: str) -> None:
         """
@@ -82,6 +88,7 @@ class Memory:
 
         self.current_id = generated_id
 
+    @_update_chat_date
     def _add_to_conversation(self, role: str, content: str, visible: int) -> None:
         """
         Adds a content to conversation history
