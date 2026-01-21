@@ -45,6 +45,9 @@ def handle_command(
         case "hist":
             handle_hist(args, view, memory, engine, style)
 
+        case "new":
+            handle_new(view, memory, style)
+
         case _:
             handle_invalid_entry(view, style=style, entry=command)
 
@@ -130,7 +133,9 @@ def handle_hist(args, view: View, memory: Memory, engine: AIEngine, style: str) 
                                 memory.get_visible_chat_history(), style=style
                             )
                         except (ValueError, ChatNotFoundError) as e:
-                            view.print_system_message(str(e), style=style)
+                            view.print_system_message(
+                                str(e), style=style, line_break=True
+                            )
 
                 except ValueError:
                     handle_invalid_entry(view, style=style, entry=args[1])
@@ -145,6 +150,7 @@ def handle_hist(args, view: View, memory: Memory, engine: AIEngine, style: str) 
                     view.print_system_message(
                         f"Deleted {len(ids_deleted)} chats: {', '.join(map(str, ids_deleted))}",
                         style=style,
+                        line_break=True,
                     )
 
             case _:
@@ -152,6 +158,18 @@ def handle_hist(args, view: View, memory: Memory, engine: AIEngine, style: str) 
 
     else:
         list_hist()
+
+
+def handle_new(view: View, memory: Memory, style: str):
+    """
+    Start new chat
+
+    Args:
+        view: Active view object
+        style: Color of text
+    """
+    view.print_system_message("Starting new chat...", line_break=True, style=style)
+    memory.current_id = None
 
 
 def handle_invalid_entry(
