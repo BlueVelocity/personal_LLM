@@ -40,9 +40,34 @@ A lightweight, terminal-based AI assistant powered by local LLMs via Ollama, wit
   - Tavily API key for fast search (recommended but not required)
   - DuckDuckGo works without any API key
 
-## Quick Start
+## Installation
 
-### 1. Install Ollama and Pull Models
+### Automated Setup (Recommended)
+
+**Linux/Mac:**
+```bash
+git clone https://github.com/yourusername/personal_LLM.git
+cd personal_LLM
+chmod +x setup.sh
+./setup.sh
+```
+
+**Windows:**
+```bash
+git clone https://github.com/yourusername/personal_LLM.git
+cd personal_LLM
+setup.bat
+```
+
+The setup script will:
+1. Create a virtual environment
+2. Install all dependencies
+3. Copy the example config file
+4. Prompt you to edit your configuration
+
+### Manual Setup
+
+**1. Install Ollama and Pull Models**
 
 ```bash
 # Install Ollama (see https://ollama.ai for your platform)
@@ -55,7 +80,7 @@ ollama pull qwen3:8b
 # ollama pull mistral:7b
 ```
 
-### 2. Clone and Setup
+**2. Clone and Setup**
 
 ```bash
 git clone https://github.com/yourusername/personal_LLM.git
@@ -74,17 +99,16 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 3. Configure
+**3. Configure**
 
 ```bash
 # Copy example config
 cp config.toml.example config.toml
 
-# Edit config.toml to set your preferred model
-# Default is qwen3:8b
+# Edit config.toml to set your preferred model and settings
 ```
 
-### 4. Set API Keys (Optional)
+**4. Set API Keys (Optional)**
 
 For Tavily search (faster, more reliable):
 
@@ -95,9 +119,17 @@ echo "TAVILY_KEY=your_api_key_here" > .env
 
 Or use DuckDuckGo (free, no API key needed) by setting `search_engine = "ddgs"` in `config.toml`.
 
-### 5. Run
+## Running
+
+**After setup:**
 
 ```bash
+# Activate virtual environment (if not already active)
+source venv/bin/activate  # Linux/Mac
+# or
+venv\Scripts\activate     # Windows
+
+# Run the application
 cd src
 python main.py
 ```
@@ -195,6 +227,8 @@ personal_LLM/
 │   ├── models.py            # Data structures (NamedTuples)
 │   ├── exceptions.py        # Custom exceptions
 │   └── cleanup_handler.py   # Signal handling for graceful shutdown
+├── setup.sh                 # Linux/Mac setup script
+├── setup.bat                # Windows setup script
 ├── config.toml.example      # Example configuration
 ├── requirements.txt         # Python dependencies
 └── memory.db               # SQLite database (created on first run)
@@ -232,7 +266,6 @@ personal_LLM/
 - [ ] Better error handling and user feedback
 - [ ] Unit tests
 - [ ] Export conversations to Markdown/PDF
-- [ ] Docker containerization
 - [ ] Conversation branching/versioning
 
 ## Contributing
@@ -248,6 +281,23 @@ Contributions welcome! Feel free to:
 - Large search results may slow response time
 - Model must be available in Ollama before running
 - Windows users: SIGHUP signal handling not available (functionality unaffected)
+
+## Troubleshooting
+
+**"Module not found" errors:**
+- Make sure your virtual environment is activated
+- Run `pip install -r requirements.txt` again
+
+**"Could not connect to Ollama" error:**
+- Make sure Ollama is running: `ollama serve`
+- Check that your model is installed: `ollama list`
+
+**Colors not displaying correctly:**
+- Your terminal may not support 256 colors
+- Try a different terminal emulator (Windows Terminal, iTerm2, etc.)
+
+**Permission errors on setup.sh:**
+- Run `chmod +x setup.sh` before executing
 
 ## License
 
