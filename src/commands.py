@@ -66,14 +66,21 @@ def handle_help(view: View, style: str) -> None:
         view: Active view object
         style: Color of text
     """
+    view.print_system_message("Controls:", style=style, line_break=True)
+
+    view.print_unordered_list(
+        ["ENTER  #Submit", "ALT + ENTER  #New line", "ESC then ENTER  #New line"],
+        style=style,
+    )
+
     view.print_system_message("Available commands:", style=style, line_break=True)
     view.print_unordered_list(
         [
-            "/info #Show info about this session",
-            "/list \\[qty | None] #List chat history",
-            "/load \\[chat_number] #Load chat by id",
-            "/delete \\[chat_number | '*'] #Delete chat by id",
-            "/exit #Exit the program",
+            "/info  #Show info about this session",
+            "/list \\[qty | None]  #List chat history",
+            "/load \\[chat_number]  #Load chat by id",
+            "/delete \\[chat_number | '*']  #Delete chat by id",
+            "/exit  #Exit the program",
         ],
         style=style,
     )

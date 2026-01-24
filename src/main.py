@@ -67,7 +67,7 @@ def main():
 
     view = View()
     view.print_panel(
-        f"[bold {style_config.header}]Chat Session Started[/bold {style_config.header}][{style_config.header}]\n > 'Enter': Submit query.\n > 'Alt + Enter': New line.\nType '/help' for a list of commands.[/{style_config.header}]",
+        f"[bold {style_config.header}]Chat Session Started[/bold {style_config.header}]\n[{style_config.header}]Type '/help' for help.[/{style_config.header}]",
         style=style_config.header,
     )
 
