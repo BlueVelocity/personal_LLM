@@ -37,7 +37,7 @@ A lightweight, terminal-based AI assistant powered by local LLMs via Ollama, wit
 - **Python 3.10+**
 - **Ollama** - [Install Ollama](https://ollama.ai)
 - **API Keys** (optional):
-  - Tavily API key for fast search (recommended but not required)
+  - Tavily API key for fast search (not required)
   - DuckDuckGo works without any API key
 
 ## Installation
@@ -61,7 +61,7 @@ setup.bat
 
 The setup script will:
 1. Create a virtual environment
-2. Install all dependencies
+2. Install python dependencies
 3. Copy the example config file
 4. Prompt you to edit your configuration
 
@@ -110,7 +110,7 @@ cp config.toml.example config.toml
 
 **4. Set API Keys (Optional)**
 
-For Tavily search (faster, more reliable):
+For Tavily search (faster, less context bloat):
 
 ```bash
 # Create .env file
@@ -188,11 +188,11 @@ warning = "#fb4934"
 - `/exit` - Exit the program
 
 **History Management:**
-- `/hist` or `/hist list` - Show recent chat history (last 3 by default)
-- `/hist list [number]` - Show specific number of recent chats
-- `/hist load [chat_id]` - Load and continue a previous conversation
-- `/hist delete [chat_id]` - Delete a specific chat
-- `/hist delete *` - Delete all chats except current session
+- `/list` - Show recent chat history (last 3 by default)
+- `/list [number]` - Show specific number of recent chats
+- `/load [chat_id]` - Load and continue a previous conversation
+- `/delete [chat_id]` - Delete a specific chat
+- `/delete *` - Delete all chats except current session
 
 **Input Controls:**
 - `Enter` - Submit your message
@@ -203,7 +203,6 @@ warning = "#fb4934"
 The AI automatically decides when to search based on:
 - Whether your question requires current information
 - If the answer is beyond its training data cutoff
-- Explicit requests to search ("look it up", "search for", etc.)
 
 ## How It Works
 
@@ -230,8 +229,9 @@ personal_LLM/
 ├── setup.sh                 # Linux/Mac setup script
 ├── setup.bat                # Windows setup script
 ├── config.toml.example      # Example configuration
+├── config.toml              # Active configuration (created with script or by user)
 ├── requirements.txt         # Python dependencies
-└── memory.db               # SQLite database (created on first run)
+└── memory.db                # SQLite database (created on first run)
 ```
 
 ## Features In Detail
@@ -245,7 +245,7 @@ personal_LLM/
 ### Dual-Model Architecture
 - Main model handles conversation and responses
 - Optional separate search model makes search decisions (saves on context for larger models)
-- If no search model specified, main model handles both
+- If no search model specified, the main model handles both at no extra memory overhead
 
 ### Smart Context Management
 - System messages hidden from view but included in context
@@ -262,11 +262,15 @@ personal_LLM/
 - [x] Command parser for chat history
 - [x] Resume previous conversations
 - [x] History loading and management
+- [ ] User defined context
+- [ ] Implement a 'delete last message' feature
+- [ ] Add option to route ddgs through tor network (must install and run tor)
+- [ ] Optimize search with ddgs and add configuration
 - [ ] Implement explicit `/search [query]` command
 - [ ] Better error handling and user feedback
 - [ ] Unit tests
 - [ ] Export conversations to Markdown/PDF
-- [ ] Conversation branching/versioning
+- [ ] Extra Credit: Conversation branching/versioning
 
 ## Contributing
 
@@ -309,7 +313,7 @@ MIT License - see [LICENSE](LICENSE) file for details
 - [Rich](https://github.com/Textualize/rich) for beautiful terminal output
 - [prompt_toolkit](https://github.com/prompt-toolkit/python-prompt-toolkit) for advanced input handling
 - [Tavily](https://tavily.com) for fast search API
-- [DuckDuckGo](https://duckduckgo.com) for free search alternative
+- [Dux Distributed Global Search](https://duckduckgo.com](https://github.com/deedy5/ddgs) for free search alternative
 
 ## Support
 
