@@ -42,8 +42,14 @@ def handle_command(
         case "info":
             handle_info(view, engine, style)
 
-        case "hist":
-            handle_hist(args, view, memory, engine, style)
+        case "list":
+            handle_list(args, view, memory, style)
+
+        case "load":
+            handle_load(args, view, memory, style)
+
+        case "delete":
+            handle_delete(args, view, memory, style)
 
         case "new":
             handle_new(view, memory, style)
@@ -64,9 +70,9 @@ def handle_help(view: View, style: str) -> None:
     view.print_unordered_list(
         [
             "/info #Show info about this session",
-            "/hist list \\[qty | None] #List chat history",
-            "/hist load \\[chat_number] #Load chat from history",
-            "/hist delete \\[chat_number | '*'] #Load chat from history",
+            "/list \\[qty | None] #List chat history",
+            "/load \\[chat_number] #Load chat by id",
+            "/delete \\[chat_number | '*'] #Delete chat by id",
             "/exit #Exit the program",
         ],
         style=style,
@@ -86,15 +92,14 @@ def handle_info(view: View, engine: AIEngine, style: str):
     )
 
 
-def handle_hist(args, view: View, memory: Memory, engine: AIEngine, style: str) -> None:
+def handle_list(args, view: View, memory: Memory, style: str) -> None:
     """
-    Handles hist command requests
+    Handles list command requests
 
     Args:
-        args: Arguments to be requested from hist
+        args: Arguments passed to list: [qty]
         view: Active view object
         memory: Active memory object
-        engine: Active engine object
         style: Color of text
     """
 
@@ -113,51 +118,72 @@ def handle_hist(args, view: View, memory: Memory, engine: AIEngine, style: str) 
         view.print_system_message(f"Retrieved {len(chat_list)} records", style=style)
 
     if args:
-        match args[0]:
-            case "list":
-                try:
-                    if len(args) < 2:
-                        list_hist()
-                    else:
-                        list_hist(args[1])
-                except ValueError:
-                    handle_invalid_entry(view, style=style, entry=args[1])
-            case "load":
-                try:
-                    if len(args) < 2:
-                        handle_invalid_entry(view, style=style, entry=" ")
-                    else:
-                        try:
-                            memory.set_current_id(int(args[1]))
-                            view.reconstruct_history(
-                                memory.get_visible_chat_history(), style=style
-                            )
-                        except (ValueError, ChatNotFoundError) as e:
-                            view.print_system_message(
-                                str(e), style=style, line_break=True
-                            )
-
-                except ValueError:
-                    handle_invalid_entry(view, style=style, entry=args[1])
-
-            case "delete":
-                try:
-                    args[1] = str(args[1])
-                except IndexError:
-                    handle_invalid_entry(view, style=style, entry=args[1])
-                else:
-                    ids_deleted = memory.delete(args[1])
-                    view.print_system_message(
-                        f"Deleted {len(ids_deleted)} chats: {', '.join(map(str, ids_deleted))}",
-                        style=style,
-                        line_break=True,
-                    )
-
-            case _:
-                handle_invalid_entry(view, style=style, entry=args[0])
-
+        try:
+            if len(args) < 1:
+                list_hist()
+            else:
+                list_hist(args[0])
+        except ValueError:
+            handle_invalid_entry(view, style=style, entry=args[0])
     else:
         list_hist()
+
+
+def handle_load(args, view: View, memory: Memory, style: str) -> None:
+    """
+    Handles load command requests
+
+    Args:
+        args: Arguments passed to load: [id]
+        view: Active view object
+        memory: Active memory object
+        style: Color of text
+    """
+
+    if args:
+        try:
+            if len(args) < 1:
+                handle_invalid_entry(view, style=style, entry=" ")
+            else:
+                try:
+                    memory.set_current_id(int(args[0]))
+                    view.reconstruct_history(
+                        memory.get_visible_chat_history(), style=style
+                    )
+                except (ValueError, ChatNotFoundError) as e:
+                    view.print_system_message(str(e), style=style, line_break=True)
+
+        except ValueError:
+            handle_invalid_entry(view, style=style, entry=args[0])
+    else:
+        handle_invalid_entry(view, style=style, entry=args[0])
+
+
+def handle_delete(args, view: View, memory: Memory, style: str) -> None:
+    """
+    Handles delete command requests
+
+    Args:
+        args: Arguments passed to delete: [id]
+        view: Active view object
+        memory: Active memory object
+        style: Color of text
+    """
+
+    if args:
+        try:
+            args[0] = str(args[0])
+        except IndexError:
+            handle_invalid_entry(view, style=style, entry=args[0])
+        else:
+            ids_deleted = memory.delete(args[0])
+            view.print_system_message(
+                f"Deleted {len(ids_deleted)} chats: {', '.join(map(str, ids_deleted))}",
+                style=style,
+                line_break=True,
+            )
+    else:
+        handle_invalid_entry(view, style=style, entry=args[0])
 
 
 def handle_new(view: View, memory: Memory, style: str):
