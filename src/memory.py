@@ -55,10 +55,11 @@ class Memory:
         def wrapper(self, *args):
             func(self, *args)
 
-            updated_datetime = datetime.now()
+            now = datetime.now()
+            updated_now = now.strftime("%Y-%m-%d %H:%M:%S")
             self.cursor.execute(
                 "UPDATE chats SET created = ? WHERE id=?",
-                (updated_datetime, self.current_id),
+                (updated_now, self.current_id),
             )
             self.db.commit()
 
@@ -77,10 +78,11 @@ class Memory:
         Example:
             create_conversation("What is the weather tomorrow?")
         """
-        created = datetime.now()
+        now = datetime.now()
+        updated_now = now.strftime("%Y-%m-%d %H:%M:%S")
 
         self.cursor.execute(
-            "INSERT INTO chats (created, title) VALUES (?,?)", (created, title)
+            "INSERT INTO chats (created, title) VALUES (?,?)", (updated_now, title)
         )
         generated_id = self.cursor.lastrowid
 

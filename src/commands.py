@@ -115,7 +115,7 @@ def handle_list(args, view: View, memory: Memory, style: str) -> None:
 
         view.print_table(
             "Chat History",
-            ["ID", "Date-Time Created", "Title"],
+            ["ID", "Last Updated", "Title"],
             chat_list,
             col_alignment=["center", "center", "left"],
             expand=True,
