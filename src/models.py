@@ -36,3 +36,7 @@ class StyleConfig(NamedTuple):
     user: str
     header: str
     warning: str
+
+
+class UserData(NamedTuple):
+    user_data: str

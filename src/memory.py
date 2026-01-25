@@ -130,7 +130,7 @@ class Memory:
         self._add_to_conversation("assistant", content, 1)
 
     def add_system_message(
-        self, initial_context: str, initial_instructions: str
+        self, initial_context: str, initial_instructions: str, user_data: str
     ) -> None:
         """
         Adds a system message to the message log
@@ -138,7 +138,7 @@ class Memory:
         Args:
             content: Content to add to assistant message
         """
-        content = f"CONTEXT: {initial_context}\nCURRENT DATE: {date.today()}\nINSTRUCTIONS: {initial_instructions}"
+        content = f"CONTEXT: {initial_context}\nCURRENT DATE: {date.today()}\nINSTRUCTIONS: {initial_instructions}\nUSER DATA: {user_data}"
         self._add_to_conversation("system", content, 0)
 
     def add_search_message(self, content: str):

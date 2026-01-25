@@ -5,6 +5,8 @@ from datetime import date
 import copy
 import json
 
+from models import UserData
+
 
 class AIEngine:
     """Provides connection with model and moderates interaction"""
@@ -108,7 +110,9 @@ class AIEngine:
         )
         return stream
 
-    def determine_search(self, messages: list[dict[str, str]]) -> dict[str, str]:
+    def determine_search(
+        self, messages: list[dict[str, str]], user_data: UserData
+    ) -> dict[str, str]:
         """Determines if search is required given the current chat context"""
         copy_of_messages = copy.deepcopy(messages)
 
@@ -123,6 +127,7 @@ class AIEngine:
             Be sure to include the date in the request if required.
             Review conversation history and responses, and analyze the LATEST QUERY. Does it require a new real-time web search?
             Respond ONLY in JSON format. Respond: {{"needs_search": true, "search_term": "..."}} or {{"needs_search": false, "search_term": ""}}
+            USER DATA: {user_data}
             """,
         }
 

@@ -3,13 +3,13 @@ from pathlib import Path
 from typing import Any
 
 from commands import handle_command
-from models import ChatHeader
+from models import ChatHeader, UserData
 from view import View
 from memory import Memory
 from engine import AIEngine
 from search import SearchEngine
 from cleanup_handler import register_cleanup
-from models import ModelConfig, SearchConfig, StyleConfig
+from models import ModelConfig, SearchConfig, UserData, StyleConfig
 
 
 def get_config():
@@ -29,7 +29,7 @@ def get_config():
 
 def parse_config(
     config_data: dict[str, Any],
-) -> tuple[ModelConfig, SearchConfig, StyleConfig]:
+) -> tuple[ModelConfig, SearchConfig, UserData, StyleConfig]:
     """Parses the config and sorts into descriptive objects"""
 
     if (
@@ -42,13 +42,14 @@ def parse_config(
 
     model_config: ModelConfig = ModelConfig(**config_data["model_settings"])
     search_config: SearchConfig = SearchConfig(**config_data["search_settings"])
+    user_data: UserData = UserData(**config_data["user_data"])
     style_config: StyleConfig = StyleConfig(**config_data["style_settings"])
 
-    return (model_config, search_config, style_config)
+    return (model_config, search_config, user_data, style_config)
 
 
 def main():
-    model_config, search_config, style_config = get_config()
+    model_config, search_config, user_data, style_config = get_config()
 
     memory = Memory()
 
@@ -109,7 +110,9 @@ def main():
                 truncated_message = " ".join(words[:10])
                 memory.create_conversation(truncated_message)
                 memory.add_system_message(
-                    model_config.initial_context, model_config.system_instructions
+                    model_config.initial_context,
+                    model_config.system_instructions,
+                    user_data.user_data,
                 )
 
             memory.add_user_message(user_input)
@@ -121,7 +124,7 @@ def main():
                 "Reviewing query...", style=style_config.system, line_break=True
             )
             search_decision = ai.determine_search(
-                memory.get_llm_formatted_chat_history()
+                memory.get_llm_formatted_chat_history(), user_data
             )
             if search_decision["needs_search"]:
                 view.print_system_message(

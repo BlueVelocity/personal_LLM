@@ -45,6 +45,7 @@ A lightweight, terminal-based AI assistant powered by local LLMs via Ollama, wit
 ### Automated Setup (Recommended)
 
 **Linux/Mac:**
+
 ```bash
 git clone https://github.com/yourusername/personal_LLM.git
 cd personal_LLM
@@ -53,6 +54,7 @@ chmod +x setup.sh
 ```
 
 **Windows:**
+
 ```bash
 git clone https://github.com/yourusername/personal_LLM.git
 cd personal_LLM
@@ -60,6 +62,7 @@ setup.bat
 ```
 
 The setup script will:
+
 1. Create a virtual environment
 2. Install python dependencies
 3. Copy the example config file
@@ -182,12 +185,14 @@ warning = "#fb4934"
 ### Commands
 
 **Chat Controls:**
+
 - `/help` - Show available commands
 - `/info` - Display current session info (model, search model)
 - `/new` - Start a new conversation
 - `/exit` - Exit the program
 
 **History Management:**
+
 - `/list` - Show recent chat history (last 3 by default)
 - `/list [number]` - Show specific number of recent chats
 - `/load [chat_id]` - Load and continue a previous conversation
@@ -195,12 +200,14 @@ warning = "#fb4934"
 - `/delete *` - Delete all chats except current session
 
 **Input Controls:**
+
 - `Enter` - Submit your message
 - `Alt + Enter` or `Esc + Enter` - Insert new line (for multi-line messages)
 
 ### Search Behavior
 
 The AI automatically decides when to search based on:
+
 - Whether your question requires current information
 - If the answer is beyond its training data cutoff
 
@@ -237,22 +244,26 @@ personal_LLM/
 ## Features In Detail
 
 ### Conversation History
+
 - All chats stored in SQLite with timestamps
 - "Last Updated" column shows most recent activity
 - Load any previous conversation and continue where you left off
 - Delete individual chats or clear all history
 
 ### Dual-Model Architecture
+
 - Main model handles conversation and responses
 - Optional separate search model makes search decisions (saves on context for larger models)
 - If no search model specified, the main model handles both at no extra memory overhead
 
 ### Smart Context Management
+
 - System messages hidden from view but included in context
 - Search results added to context invisibly
 - Efficient message history for multi-turn conversations
 
 ### Graceful Cleanup
+
 - Automatic model unloading on exit
 - Signal handlers for Ctrl+C, terminal close, kill commands
 - Database commits ensure no data loss
@@ -262,7 +273,7 @@ personal_LLM/
 - [x] Command parser for chat history
 - [x] Resume previous conversations
 - [x] History loading and management
-- [ ] User defined context
+- [x] User defined context
 - [ ] Implement a 'delete last message' feature
 - [ ] Add option to route ddgs through tor network (must install and run tor)
 - [ ] Optimize search with ddgs and add configuration
@@ -289,18 +300,22 @@ Contributions welcome! Feel free to:
 ## Troubleshooting
 
 **"Module not found" errors:**
+
 - Make sure your virtual environment is activated
 - Run `pip install -r requirements.txt` again
 
 **"Could not connect to Ollama" error:**
+
 - Make sure Ollama is running: `ollama serve`
 - Check that your model is installed: `ollama list`
 
 **Colors not displaying correctly:**
+
 - Your terminal may not support 256 colors
 - Try a different terminal emulator (Windows Terminal, iTerm2, etc.)
 
 **Permission errors on setup.sh:**
+
 - Run `chmod +x setup.sh` before executing
 
 ## License
