@@ -1,6 +1,11 @@
-import tomllib
 from pathlib import Path
 from typing import Any
+import sys
+
+if sys.version_info.major >= 3 and sys.version_info.minor >= 11:
+    import tomllib
+else:
+    import tomli as tomllib
 
 from commands import handle_command
 from models import ChatHeader, UserData

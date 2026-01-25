@@ -39,6 +39,7 @@ rich==14.2.0
 socksio==1.0.0
 soupsieve==2.8.1
 tavily==1.1.0
+tomli==2.4.0
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 urllib3==2.6.3
