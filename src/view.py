@@ -1,4 +1,5 @@
 from typing import Iterator, Iterable
+from ollama import ResponseError
 from rich import box
 from rich.console import Console
 from rich.live import Live
@@ -184,6 +185,7 @@ class View:
                             expand=True,
                         )
                     )
+
         return full_response
 
     def reconstruct_history(self, chat_items: list[ChatItem], style: str):

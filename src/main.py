@@ -2,6 +2,8 @@ from pathlib import Path
 from typing import Any
 import sys
 
+import ollama
+
 if sys.version_info.major >= 3 and sys.version_info.minor >= 11:
     import tomllib
 else:
@@ -14,7 +16,7 @@ from memory import Memory
 from engine import AIEngine
 from search import SearchEngine
 from cleanup_handler import register_cleanup
-from models import ModelConfig, SearchConfig, UserData, StyleConfig
+from models import ModelConfig, SearchConfig, StyleConfig
 
 
 def get_config():
@@ -147,12 +149,33 @@ def main():
                 )
 
             # Get and print the response
-            response_stream = ai.get_response_stream(
-                memory.get_llm_formatted_chat_history()
-            )
-            ai_response = view.live_response(
-                model_config.main_model, response_stream, style=style_config.assistant
-            )
+            try:
+                response_stream = ai.get_response_stream(
+                    memory.get_llm_formatted_chat_history()
+                )
+
+                ai_response = view.live_response(
+                    model_config.main_model,
+                    response_stream,
+                    style=style_config.assistant,
+                )
+            except ollama.ResponseError:
+                view.print_system_message(
+                    "Thinking is unavailable. Do the settings in config.toml match your model?",
+                    style=style_config.system,
+                    line_break=True,
+                )
+                ai.no_thinking_main_fallback()
+
+                response_stream = ai.get_response_stream(
+                    memory.get_llm_formatted_chat_history()
+                )
+
+                ai_response = view.live_response(
+                    model_config.main_model,
+                    response_stream,
+                    style=style_config.assistant,
+                )
 
             memory.add_assistant_message(ai_response)
 

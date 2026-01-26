@@ -34,6 +34,7 @@ class AIEngine:
 
     def load_into_memory(self) -> None:
         """Loads the model(s) into memory on running the program"""
+
         thread = threading.Thread(
             target=self.client.generate,
             kwargs={
@@ -58,6 +59,10 @@ class AIEngine:
             )
 
             search_thread.start()
+
+    def no_thinking_main_fallback(self) -> None:
+        self.main_thinking = False
+        self.load_into_memory()
 
     def get_models(self) -> ollama.ListResponse:
         """Gets the model list and checks that Ollama is running and aavailable"""
@@ -99,7 +104,6 @@ class AIEngine:
 
     def get_response_stream(self, messages: list[dict[str, str]]) -> Iterator:
         """Returns the Ollama model response stream"""
-
         stream = self.client.chat(
             model=self.model,
             messages=messages,
@@ -108,6 +112,7 @@ class AIEngine:
             keep_alive=self.keep_alive,
             think=self.main_thinking,
         )
+
         return stream
 
     def determine_search(
@@ -139,14 +144,25 @@ class AIEngine:
             """,
         }
 
-        response = self.client.chat(
-            model=self.search_model,
-            messages=copy_of_messages,
-            format="json",
-            options=self.engine_options,
-            stream=False,
-            think=self.search_thinking,
-        )
+        try:
+            response = self.client.chat(
+                model=self.search_model,
+                messages=copy_of_messages,
+                format="json",
+                options=self.engine_options,
+                stream=False,
+                think=self.search_thinking,
+            )
+        except ollama.ResponseError:
+            self.search_thinking = False
+            response = self.client.chat(
+                model=self.search_model,
+                messages=copy_of_messages,
+                format="json",
+                options=self.engine_options,
+                stream=False,
+                think=self.search_thinking,
+            )
 
         result = json.loads(response["message"]["content"])
 
