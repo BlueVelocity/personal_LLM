@@ -12,6 +12,7 @@ class ChatItem(NamedTuple):
 class ChatHeader(NamedTuple):
     id: str
     created: str
+    updated: str
     title: str
 
 

@@ -40,7 +40,7 @@ def handle_command(
             handle_help(view, style)
 
         case "info":
-            handle_info(view, engine, memory, style)
+            handle_info(view, memory, engine, style)
 
         case "list":
             handle_list(args, view, memory, style)
@@ -118,18 +118,25 @@ def handle_list(args, view: View, memory: Memory, style: str) -> None:
     """
 
     def list_hist(qty: int = 0):
-        chat_list: list[ChatHeader] = memory.get_chat_list(qty)
+        chat_list: list[ChatHeader] = memory.get_chat_list()
+
+        if qty:
+            requested_list: list[ChatHeader] = chat_list[: int(qty)]
+        else:
+            requested_list: list[ChatHeader] = chat_list
 
         view.print_table(
             "Chat History",
-            ["ID", "Last Updated", "Title"],
-            chat_list,
-            col_alignment=["center", "center", "left"],
+            ["ID", "Created", "Last Updated", "Title"],
+            requested_list,
+            col_alignment=["center", "center", "center", "left"],
             expand=True,
             style=style,
         )
 
-        view.print_system_message(f"Retrieved {len(chat_list)} records", style=style)
+        view.print_system_message(
+            f"Retrieved {len(requested_list)} of {len(chat_list)} records", style=style
+        )
 
     if args:
         try:

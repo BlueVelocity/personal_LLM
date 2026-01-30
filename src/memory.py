@@ -29,6 +29,7 @@ class Memory:
                 CREATE TABLE chats(
                     id INTEGER PRIMARY KEY, 
                     created TEXT,
+                    updated TEXT,
                     title TEXT 
                 )
             """)
@@ -58,7 +59,7 @@ class Memory:
             now = datetime.now()
             updated_now = now.strftime("%Y-%m-%d %H:%M:%S")
             self.cursor.execute(
-                "UPDATE chats SET created = ? WHERE id=?",
+                "UPDATE chats SET updated = ? WHERE id=?",
                 (updated_now, self.current_id),
             )
             self.db.commit()
@@ -217,12 +218,12 @@ class Memory:
         if limit:
             chat_headers = reversed(
                 self.cursor.execute(
-                    f"SELECT * FROM chats ORDER BY created DESC LIMIT {limit}"
+                    f"SELECT * FROM chats ORDER BY updated DESC LIMIT {limit}"
                 ).fetchall()
             )
         else:
             chat_headers = self.cursor.execute(
-                "SELECT * FROM chats ORDER BY created ASC"
+                "SELECT * FROM chats ORDER BY updated ASC"
             ).fetchall()
 
         chat_list = []

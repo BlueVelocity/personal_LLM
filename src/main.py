@@ -5,6 +5,8 @@ from datetime import datetime
 
 import ollama
 
+import commands
+
 if sys.version_info.major >= 3 and sys.version_info.minor >= 11:
     import tomllib
 else:
@@ -81,15 +83,7 @@ def main():
     )
 
     # Print history
-    chat_list: list[ChatHeader] = memory.get_chat_list(3)
-    view.print_table(
-        "Chat History",
-        ["ID", "Last Updated", "Title"],
-        chat_list,
-        col_alignment=["center", "center", "left"],
-        expand=True,
-        style=style_config.system,
-    )
+    handle_command("/list 3", view, memory, ai, style=style_config.system)
 
     def end_session():
         """Notifies the user the session is ending and unloads the llm from memory"""
