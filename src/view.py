@@ -159,12 +159,14 @@ class View:
 
         return user_input
 
-    def live_response(self, model_name: str, response_stream: Iterator, style: str):
+    def live_response(
+        self, model_name: str, time: str, response_stream: Iterator, style: str
+    ):
         full_response = ""
         with Live(
             Panel(
                 "Thinking...",
-                title=f"[bold {style}]{model_name}[/bold {style}]",
+                title=f"[bold {style}]{model_name}[/bold {style}][{style}] - {time}[/{style}]",
                 title_align="left",
                 border_style=style,
                 expand=True,
@@ -179,7 +181,7 @@ class View:
                     live.update(
                         Panel(
                             Markdown(full_response),
-                            title=f"[bold {style}]{model_name}[/bold {style}]",
+                            title=f"[bold {style}]{model_name}[/bold {style}][{style}] - {time}[/{style}]",
                             title_align="left",
                             border_style=style,
                             expand=True,
@@ -197,4 +199,9 @@ class View:
                 if item.role == "user":
                     self.print_user_message(item.message, style=style)
                 else:
-                    self.print_assistant_message(item.message, "Past AI", style=style)
+                    time_of_message = item.created[:19]
+                    self.print_assistant_message(
+                        item.message,
+                        f"Past AI[{style}] - {time_of_message}[/{style}]",
+                        style=style,
+                    )

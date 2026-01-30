@@ -40,7 +40,7 @@ def handle_command(
             handle_help(view, style)
 
         case "info":
-            handle_info(view, engine, style)
+            handle_info(view, engine, memory, style)
 
         case "list":
             handle_list(args, view, memory, style)
@@ -86,16 +86,23 @@ def handle_help(view: View, style: str) -> None:
     )
 
 
-def handle_info(view: View, engine: AIEngine, style: str):
+def handle_info(view: View, memory: Memory, engine: AIEngine, style: str):
     """
     Lists current configuration info
 
     Args:
         view: Active view object
+        memory: Active memory object
+        engine: Active engine object
         style: Color of text
     """
     view.print_unordered_list(
-        [f"Model: {engine.model}", f"Search Model: {engine.search_model}"], style=style
+        [
+            f"Main Model: {engine.model}",
+            f"Search Model: {engine.search_model}",
+            f"Current Chat ID: {memory.current_id}",
+        ],
+        style=style,
     )
 
 

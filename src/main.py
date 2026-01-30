@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Any
 import sys
+from datetime import datetime
 
 import ollama
 
@@ -149,6 +150,8 @@ def main():
                 )
 
             # Get and print the response
+            now = datetime.now()
+            formatted_now = now.strftime("%Y-%m-%d %H:%M:%S")
             try:
                 response_stream = ai.get_response_stream(
                     memory.get_llm_formatted_chat_history()
@@ -156,6 +159,7 @@ def main():
 
                 ai_response = view.live_response(
                     model_config.main_model,
+                    formatted_now,
                     response_stream,
                     style=style_config.assistant,
                 )
@@ -173,6 +177,7 @@ def main():
 
                 ai_response = view.live_response(
                     model_config.main_model,
+                    formatted_now,
                     response_stream,
                     style=style_config.assistant,
                 )
