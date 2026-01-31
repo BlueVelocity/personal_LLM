@@ -5,8 +5,6 @@ from datetime import datetime
 
 import ollama
 
-import commands
-
 if sys.version_info.major >= 3 and sys.version_info.minor >= 11:
     import tomllib
 else:

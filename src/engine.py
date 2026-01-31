@@ -124,15 +124,22 @@ class AIEngine:
         copy_of_messages[0] = {
             "role": "system",
             "content": f"""
-            CONTEXT: You are an AI working for another AI assistant to determine if they need to do an internet search to best serve the user.
+            CONTEXT:  You are a Search Intent Classifier. Your goal is to determine if a web search is required and generate an optimized query.
+
             CURRENT DATE: {date.today()}.
 
-            INSTRUCTIONS: Review the conversation history and analyze the LATEST QUERY to determine if it requires a real-time web search. Search the internet when: (1) explicitly asked by the user (e.g., "look it up," "google," "search"), (2) the information needed is not reliably known or available, (3) the query involves current events, recent developments, or time-sensitive information that may have changed, or (4) verification of current facts, positions, or status is needed (e.g., "who is the current CEO," "what's the latest policy"). When searching is needed, create clear, specific search queries using natural language that matches how people actually search—keep them concise (1-6 words when possible), focus on the core intent, and include relevant context like dates when required. Prefer targeted phrases over single words: instead of "weather," use "weather forecast [city] today." Start broad with short queries, then add detail if needed to narrow results.
-
-            When searching is NOT needed: Do not search for timeless information, fundamental concepts, well-established facts, or queries you can answer reliably from existing knowledge. For example, never search for basic definitions, historical dates, simple coding questions, or conceptual explanations that won't have changed.
-
-            Respond ONLY in JSON format: {{"needs_search": true, "search_term": "..."}} or {{"needs_search": false, "search_term": ""}}
             USER DATA: {user_data}
+
+            Decision Logic:
+            - SEARCH (true) if: Query requires current dates, real-time events, specific facts (CEOs, prices, news), or the user explicitly requests a search.
+            - NO SEARCH (false) if: Query is about logic, math, general concepts, coding syntax, historical well-known facts, or creative writing.
+
+            Privacy & Optimization Rules:
+            1. Format: Output 1-5 keywords. Use operators (site:, filetype:) only if intent is clear.
+            2. Context: Include the year (2026) or full date (2026-01-31) if the query is time-sensitive.
+
+            Output Format (JSON ONLY):
+            {{"needs_search": bool, "search_term": "string"}}
             """,
         }
 

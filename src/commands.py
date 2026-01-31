@@ -121,7 +121,7 @@ def handle_list(args, view: View, memory: Memory, style: str) -> None:
         chat_list: list[ChatHeader] = memory.get_chat_list()
 
         if qty:
-            requested_list: list[ChatHeader] = chat_list[: int(qty)]
+            requested_list: list[ChatHeader] = chat_list[-int(qty) :]
         else:
             requested_list: list[ChatHeader] = chat_list
 
