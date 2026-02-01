@@ -39,11 +39,8 @@ class View:
         line_break: bool = False,
     ):
         for i, message in enumerate(message_list):
-            if i < 10:
-                i = "0" + str(i + 1)
-
             self.print(
-                f"[bold {style}]{i}.[/bold {style}][{style}] {message}[/{style}]",
+                f"[bold {style}][{i + 1}][/bold {style}][{style}] {message}[/{style}]",
                 line_break,
             )
 
