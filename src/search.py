@@ -103,7 +103,7 @@ class SearchEngine:
                 if url:
                     try:
                         headers = {"User-Agent": self.user_agent}
-                        response = requests.get(url, headers=headers, timeout=10)
+                        response = requests.get(url, headers=headers, timeout=3)
                         notifications.append(
                             f"[{response.status_code}]: {response.url}"
                         )

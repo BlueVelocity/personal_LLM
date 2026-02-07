@@ -1,6 +1,11 @@
 from typing import NamedTuple
 
 
+class ModelResponse(NamedTuple):
+    thoughts: str
+    content: str
+
+
 class ChatItem(NamedTuple):
     id: str
     created: str
@@ -34,6 +39,8 @@ class SearchConfig(NamedTuple):
 class StyleConfig(NamedTuple):
     system: str
     assistant: str
+    assistant_thinking: str
+    assistant_history: str
     user: str
     header: str
     warning: str

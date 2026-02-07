@@ -1,4 +1,5 @@
-from typing import Iterator, Iterable
+from sys import thread_info
+from typing import Iterator, Iterable, NamedTuple
 from ollama import ResponseError
 from rich import box
 from rich.console import Console
@@ -6,12 +7,13 @@ from rich.live import Live
 from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.table import Table
+from rich.console import Group
 from prompt_toolkit import prompt
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.key_binding import KeyBindings
 
-from models import ChatItem
+from models import ChatItem, ModelResponse
 
 
 class View:
@@ -157,35 +159,61 @@ class View:
         return user_input
 
     def live_response(
-        self, model_name: str, time: str, response_stream: Iterator, style: str
+        self,
+        model_name: str,
+        time: str,
+        response_stream: Iterator,
+        style: str,
+        thinking_style,
     ):
-        full_response = ""
+        thinking_str: str = ""
+        content_str: str = ""
+
         with Live(
-            Panel(
-                "Thinking...",
-                title=f"[bold {style}]{model_name}[/bold {style}][{style}] - {time}[/{style}]",
-                title_align="left",
-                border_style=style,
-                expand=True,
-            ),
             console=self.CONSOLE,
-            refresh_per_second=50,
+            refresh_per_second=12,
         ) as live:
             for chunk in response_stream:
-                content = chunk["message"]["content"]
+                msg = chunk.get("message", {})
+                thinking = msg.get("thinking")
+                content = msg.get("content")
+
+                if thinking:
+                    thinking_str += thinking
                 if content:
-                    full_response += content
-                    live.update(
+                    content_str += content
+
+                # Create a display group to stack elements
+                display_elements = []
+
+                if thinking_str:
+                    display_elements.append(
                         Panel(
-                            Markdown(full_response),
-                            title=f"[bold {style}]{model_name}[/bold {style}][{style}] - {time}[/{style}]",
+                            Markdown(thinking_str),
+                            title=f"{model_name}'s Thoughts...",
+                            style=thinking_style,
+                            border_style=thinking_style,
                             title_align="left",
-                            border_style=style,
                             expand=True,
                         )
                     )
 
-        return full_response
+                if content_str:
+                    display_elements.append(
+                        Panel(
+                            Markdown(content_str),
+                            title=f"[bold {style}]{model_name}[/bold {style}] - {time}",
+                            border_style=style,
+                            title_align="left",
+                            expand=True,
+                        )
+                    )
+
+                # Update the Live display with the grouped panels
+                if display_elements:
+                    live.update(Group(*display_elements))
+
+        return ModelResponse(thoughts=thinking_str, content=content_str)
 
     def reconstruct_history(self, chat_items: list[ChatItem], style: str):
         self.print_system_message(

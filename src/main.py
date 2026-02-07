@@ -11,7 +11,7 @@ else:
     import tomli as tomllib
 
 from commands import handle_command
-from models import ChatHeader, UserData
+from models import ModelResponse, UserData
 from view import View
 from memory import Memory
 from engine import AIEngine
@@ -154,12 +154,12 @@ def main():
                     formatted_now,
                     response_stream,
                     style=style_config.assistant,
+                    thinking_style=style_config.assistant_thinking,
                 )
             except ollama.ResponseError:
                 view.print_system_message(
-                    "Thinking is unavailable. Do the settings in config.toml match your model?",
+                    "Thinking is unavailable. Do the settings in config.toml match your model capability?",
                     style=style_config.system,
-                    line_break=True,
                 )
                 ai.no_thinking_main_fallback()
 
@@ -167,14 +167,15 @@ def main():
                     memory.get_llm_formatted_chat_history()
                 )
 
-                ai_response = view.live_response(
+                ai_response: ModelResponse = view.live_response(
                     model_config.main_model,
                     formatted_now,
                     response_stream,
                     style=style_config.assistant,
+                    thinking_style=style_config.assistant_thinking,
                 )
 
-            memory.add_assistant_message(ai_response)
+            memory.add_assistant_message(ai_response.content)
 
             if notifications:
                 view.print_system_message("Search sources:", style=style_config.system)

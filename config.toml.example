@@ -31,6 +31,8 @@ Age: Unknown
 [style_settings]
 system = "#a89984"
 assistant = "#b8bb26"
+assistant_thinking = "#a89984"
+assistant_history = "#a89984"
 user = "#83a598"
 header = "#ebdbb2"
 warning = "#fb4934"
