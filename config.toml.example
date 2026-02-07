@@ -6,33 +6,30 @@ search_model = ""
 # Model Settings
 keep_alive = 60
 main_thinking = true #Recommended if supported
-search_thinking = false
+search_thinking = true
 
 # Context and instructions
 initial_context = "You are an AI assistant with internet access."
-system_instructions = "1. Citations: Every claim derived from search results must be attributed using Markdown hyperlinks, format:  [[REFERENCE_NUM](URL)]\n2. Brevity: Prioritize high information density. Use a 'Bottom Line Up Front' (BLUF) approach to ensure the core answer is immediate.\n3. Scope: Provide a comprehensive response that addresses all parts of the query while remaining succinct and avoiding filler text."
+system_instructions = "Brevity: Prioritize high information density. Use a 'Too Long Didn't Read' (TLDR) approach, with the TLDR presented at the front.\n"
 
 [search_settings]
 # Uncomment desired search engine_name
 
 search_engine = "ddgs" # Free, slower.
-# search_engine = "tavily" # Requires api key in .env with key: TAVILY_KEY and is kind of worse to be honest
+# search_engine = "tavily" # Requires api key in .env with key: TAVILY_KEY
 
 search_headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36" # Required for best ddgs experience
 
 [user_data]
 # Location, age, name, etc.
 user_data = '''
-Location: Unknown
-Age: Unknown
 '''
-
 
 [style_settings]
 system = "#a89984"
 assistant = "#b8bb26"
-assistant_thinking = "#a89984"
-assistant_history = "#a89984"
+assistant_text = "#ebdbb2"
 user = "#83a598"
-header = "#ebdbb2"
+header = "#a89984"
 warning = "#fb4934"
+text = "#ebdbb2"
