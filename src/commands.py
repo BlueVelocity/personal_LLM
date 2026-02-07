@@ -1,7 +1,10 @@
+import httpx
+
 from view import View
 from memory import Memory
 from engine import AIEngine
-from models import ChatItem, ChatHeader
+from search import SearchEngine
+from models import ChatHeader
 from exceptions import ChatNotFoundError, CommandNotFoundError
 
 
@@ -21,7 +24,12 @@ def parse_command(input_str: str) -> tuple[str, list[str]]:
 
 
 def handle_command(
-    input_str: str, view: View, memory: Memory, engine: AIEngine, style: str
+    input_str: str,
+    view: View,
+    memory: Memory,
+    engine: AIEngine,
+    search: SearchEngine,
+    style: str,
 ) -> None:
     """
     Handles command request
@@ -31,6 +39,7 @@ def handle_command(
         view: Active view object
         memory: Active memory object
         engine: Active engine object
+        search: Active search engine object
         style: Color of text
     """
     try:
@@ -41,7 +50,7 @@ def handle_command(
                 handle_help(view, style)
 
             case "info":
-                handle_info(view, memory, engine, style)
+                handle_info(view, memory, engine, search, style)
 
             case "list":
                 handle_list(args, view, memory, style)
@@ -54,6 +63,9 @@ def handle_command(
 
             case "new":
                 handle_new(view, memory, style)
+
+            case "tor-status":
+                handle_tor_status(view, search, style)
 
             case _:
                 raise CommandNotFoundError
@@ -97,7 +109,9 @@ def handle_help(view: View, style: str, commands_only: bool = False) -> None:
     )
 
 
-def handle_info(view: View, memory: Memory, engine: AIEngine, style: str):
+def handle_info(
+    view: View, memory: Memory, engine: AIEngine, search: SearchEngine, style: str
+):
     """
     Lists current configuration info
 
@@ -107,14 +121,53 @@ def handle_info(view: View, memory: Memory, engine: AIEngine, style: str):
         engine: Active engine object
         style: Color of text
     """
+    tor_status = "Enabled" if search.use_tor else "Disabled"
     view.print_unordered_list(
         [
             f"Main Model: {engine.model}",
             f"Search Model: {engine.search_model}",
+            f"Search Engine: {search.selected_engine}",
+            f"Tor Routing: {tor_status}",
             f"Current Chat ID: {memory.current_id}",
         ],
         style=style,
     )
+
+
+def handle_tor_status(view: View, search: SearchEngine, style: str):
+    """
+    Checks and displays Tor connection status
+
+    Args:
+        view: Active view object
+        search: Active search engine object
+        style: Color of text
+    """
+    view.print_system_message(
+        "Checking Tor connection...", style=style, line_break=True
+    )
+
+    if search.use_tor:
+        try:
+            status = search.verify_tor_connection()
+            if status:
+                view.print_system_message(
+                    f"✓ Connected through Tor. Info: {status}", style=style
+                )
+            else:
+                view.print_system_message("❌ Not connected to Tor", style=style)
+                view.print_system_message(
+                    "Hints: Ensure Tor is running (systemctl status tor) and configured correctly",
+                    style=style,
+                )
+        except httpx.ConnectError:
+            view.print_system_message("❌ Not connected to Tor", style=style)
+            view.print_system_message(
+                "Hints: Ensure Tor is running (systemctl status tor) and configured correctly",
+                style=style,
+            )
+    else:
+        view.print_system_message("Tor routing is disabled by the user", style=style)
 
 
 def handle_list(args, view: View, memory: Memory, style: str) -> None:

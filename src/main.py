@@ -86,7 +86,7 @@ def main():
     )
 
     # Print history
-    handle_command("/list 3", view, memory, ai, style=style_config.system)
+    handle_command("/list 3", view, memory, ai, search, style=style_config.system)
 
     def end_session():
         """Notifies the user the session is ending and unloads the llm from memory"""
@@ -107,7 +107,9 @@ def main():
                 break
 
             if user_input.lower().startswith("/"):
-                handle_command(user_input, view, memory, ai, style=style_config.system)
+                handle_command(
+                    user_input, view, memory, ai, search, style=style_config.system
+                )
                 continue
 
             if not memory.current_id:

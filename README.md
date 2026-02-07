@@ -6,6 +6,7 @@ A lightweight, terminal-based AI assistant powered by local LLMs via Ollama, wit
 
 - **Local-First AI** - Run powerful language models entirely on your machine
 - **Smart Search Integration** - AI automatically determines when to search the internet for current information
+- **🧅 Tor Network Support** - Route DuckDuckGo searches through Tor for enhanced privacy (optional)
 - **Conversation History** - Persistent chat storage with SQLite database
 - **Load & Resume Chats** - Access and continue previous conversations
 - **Dual-Model Architecture** - Separate model for intelligent search decision making
@@ -63,9 +64,9 @@ setup.bat
 
 The setup script will:
 
-1. Create a virtual environment
-2. Install python dependencies
-3. Copy the example config file
+1. Create a virtual environment and source it
+2. Install python dependencies to the virtual environment
+3. Copy the example config.toml.example file to config.toml in project root
 4. Prompt you to edit your configuration
 
 ### Manual Setup
@@ -122,6 +123,115 @@ echo "TAVILY_KEY=your_api_key_here" > .env
 
 Or use DuckDuckGo (free, no API key needed) by setting `search_engine = "ddgs"` in `config.toml`.
 
+## Tor Network Support (Optional)
+
+For enhanced privacy with DuckDuckGo searches, you can route requests through the Tor network.
+
+### Why Use Tor?
+
+- **Anonymous Searches** - Your IP address is hidden from search engines and websites
+- **Privacy Protection** - Prevents tracking of your search queries
+- **Censorship Circumvention** - Access blocked content in restricted regions
+- **No API Dependency** - Works with free DuckDuckGo searches
+
+### Prerequisites
+
+1. Install Tor Browser or standalone Tor service
+2. Ensure Tor is running (default SOCKS port: 9050)
+
+### Installation
+
+**Linux (Debian/Ubuntu):**
+
+```bash
+# Install Tor
+sudo apt update
+sudo apt install tor
+
+# Start Tor service
+sudo systemctl start tor
+
+# Enable Tor to start on boot (optional)
+sudo systemctl enable tor
+
+# Verify Tor is running
+sudo systemctl status tor
+```
+
+**macOS:**
+
+```bash
+# Install via Homebrew
+brew install tor
+
+# Start Tor
+brew services start tor
+
+# Or run manually in a separate terminal
+tor
+```
+
+**Windows:**
+
+Option 1: Download [Tor Browser](https://www.torproject.org/download/) and keep it running
+Option 2: Download [Tor Expert Bundle](https://www.torproject.org/download/tor/) for standalone service
+
+### Tor Configuration
+
+Edit `config.toml`:
+
+```toml
+[search_settings]
+search_engine = "ddgs"  # Must use DuckDuckGo
+use_tor = true          # Enable Tor routing
+tor_port = 9050         # Default SOCKS proxy port
+tor_control_port = 9051 # Optional: for circuit renewal
+```
+
+### Verifying Tor Connection
+
+After enabling Tor, use the built-in verification command:
+
+```bash
+> /tor-status
+[*] Checking Tor connection...
+[*] ✓ Connected through Tor. Info: {"IsTor":true,"IP":"185.220.101.xx"}
+```
+
+### Performance Considerations
+
+- **Latency** - Tor adds latency each request due to network routing
+- **Reliability** - Some exit nodes may be slower or temporarily unavailable
+- **Timeout** - Automatically increased from 3s to 8s when Tor is enabled
+
+### Troubleshooting Tor
+
+**"Connection refused" errors:**
+
+```bash
+# Check if Tor is running
+sudo systemctl status tor  # Linux
+brew services list         # macOS
+
+# Verify Tor port
+sudo netstat -tlnp | grep 9050  # Linux
+lsof -i :9050                   # macOS
+```
+
+**Slow searches:**
+
+- Tor routing is naturally slower; this is expected
+- Consider disabling Tor for time-sensitive queries
+- You can toggle Tor on/off by editing config.toml
+
+**Exit node blocked:**
+
+- Some websites block Tor exit nodes
+- Use `/tor-status` to verify connection
+- Restart Tor to get a new circuit: `sudo systemctl restart tor`
+
+**Note:** Tavily API searches do not benefit from Tor routing since the API server sees your request directly. Tor is best suited for use with DuckDuckGo web scraping.
+
 ## Running
 
 **After setup:**
@@ -144,7 +254,7 @@ Edit `config.toml` to customize:
 ```toml
 [model_settings]
 # Models
-main_model = "qwen3:8b"          # Your primary chat model
+main_model = "qwen3:8b"           # Your primary chat model
 search_model = ""                 # Leave empty to use main_model for search decisions
 
 # Model Settings
@@ -159,6 +269,10 @@ system_instructions = ""          # Add custom instructions here
 [search_settings]
 search_engine = "ddgs"            # Options: "tavily" or "ddgs"
 search_headers = "Mozilla/5.0..." # User agent for DuckDuckGo
+
+# Tor Network Settings (Optional)
+use_tor = false                   # Enable Tor routing for DuckDuckGo
+tor_port = 9050                   # Tor SOCKS proxy port
 
 [style_settings]
 # Gruvbox-inspired color scheme (hex codes)
@@ -177,9 +291,16 @@ warning = "#fb4934"
 > You: What's the weather like today?
 [*] Reviewing query...
 [*] Searching the web for: current weather Niagara Falls Ontario...
+[*] Tor Verified: {"IsTor":true,"IP":"185.220.101.xx"}
 ╭─ qwen3:8b ────────────────────────────────────────────────────────────────────────────────╮
 │ Hello! 😊 The weather today in Niagara Falls in Ontario is...                             │
 ╰───────────────────────────────────────────────────────────────────────────────────────────╯
+[*] Search sources:
+[1] [200]: https://example.com/lorem-ipsum
+[2] [200]: https://example.com/lorem-ipsum
+[3] [200]: https://example.com/lorem-ipsum
+[4] [200]: https://example.com/lorem-ipsum
+[5] [200]: https://example.com/lorem-ipsum
 ```
 
 ### Commands
@@ -199,6 +320,10 @@ warning = "#fb4934"
 - `/delete [chat_id]` - Delete a specific chat
 - `/delete *` - Delete all chats except current session
 
+**Privacy & Network:**
+
+- `/tor-status` - Check Tor connection and verify anonymity
+
 **Input Controls:**
 
 - `Enter` - Submit your message
@@ -216,6 +341,7 @@ The AI automatically decides when to search based on:
 1. **User Input** → Question entered in terminal
 2. **Search Decision** → Secondary model determines if web search is needed
 3. **Search (if needed)** → Queries Tavily or DuckDuckGo for current info
+   - If Tor enabled: Routes through Tor network for privacy
 4. **Response Generation** → Primary model generates response with context
 5. **Storage** → Conversation saved to SQLite database with automatic timestamp updates
 
@@ -256,6 +382,13 @@ personal_LLM/
 - Optional separate search model makes search decisions (saves on context for larger models)
 - If no search model specified, the main model handles both at no extra memory overhead
 
+### Tor Network Integration
+
+- Optional SOCKS5 proxy routing through Tor for DuckDuckGo searches
+- IP verification via Tor Project API
+- Automatic timeout adjustment for network latency
+- Clear visual indicators when Tor is active
+
 ### Smart Context Management
 
 - System messages hidden from view but included in context
@@ -274,9 +407,8 @@ personal_LLM/
 - [x] Resume previous conversations
 - [x] History loading and management
 - [x] User defined context
+- [x] Add option to route ddgs through tor network (must install and run tor)
 - [ ] Implement a 'delete last message' feature
-- [ ] Add option to route ddgs through tor network (must install and run tor)
-- [ ] Optimize search with ddgs and add configuration
 - [ ] Implement explicit `/search [query]` command
 - [ ] Better error handling and user feedback
 - [ ] Unit tests
@@ -296,6 +428,7 @@ Contributions welcome! Feel free to:
 - Large search results may slow response time
 - Model must be available in Ollama before running
 - Windows users: SIGHUP signal handling not available (functionality unaffected)
+- Tor routing adds latency to search (expected behavior)
 
 ## Troubleshooting
 
@@ -318,6 +451,32 @@ Contributions welcome! Feel free to:
 
 - Run `chmod +x setup.sh` before executing
 
+Tor connection failures:\*\*
+
+- Verify Tor is running: `sudo systemctl status tor` or `brew services list`
+- Check Tor port: `sudo netstat -tlnp | grep 9050`
+- Use `/tor-status` command to diagnose issues
+
+## Security & Privacy Notes
+
+**When using Tor:**
+
+- Your searches are routed through the Tor network
+- Your IP address is hidden from search engines and websites
+- Exit node operators can see unencrypted traffic (but not your IP)
+- Some websites may block Tor exit nodes
+
+**Local AI Processing:**
+
+- All AI processing happens on your machine
+- No data sent to cloud services (except search queries)
+- Chat history stored locally in SQLite database
+
+**Search Engines:**
+
+- DuckDuckGo: Privacy-focused, no API key required, works with Tor
+- Tavily: API-based, requires key, Tor provides no benefit
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details
@@ -329,6 +488,7 @@ MIT License - see [LICENSE](LICENSE) file for details
 - [prompt_toolkit](https://github.com/prompt-toolkit/python-prompt-toolkit) for advanced input handling
 - [Tavily](https://tavily.com) for fast search API
 - [Dux Distributed Global Search](https://duckduckgo.com](https://github.com/deedy5/ddgs) for free search alternative
+- [Tor Project](https://www.torproject.org/) for privacy-preserving network routing
 
 ## Support
 

@@ -1,3 +1,4 @@
+from datetime import time
 import os
 from typing import TypedDict
 from dotenv import load_dotenv
@@ -99,6 +100,15 @@ class SearchEngine:
             notifications.append(f"Tavily search error: {str(e)}")
             return {"notifications": notifications, "context": "", "message": message}
 
+    def verify_tor_connection(self) -> str:
+        TOR_PROXY = f"socks5://127.0.0.1:{self.tor_port}"
+        try:
+            with httpx.Client(proxy=TOR_PROXY) as check_client:
+                response = check_client.get("https://check.torproject.org/api/ip")
+                return response.text
+        except httpx.ConnectError as e:
+            raise e
+
     def search_duckduckgo(self, query: str) -> SearchResult:
         """
         Searches the internet using duckduckgo search with article-focused content extraction.
@@ -113,12 +123,7 @@ class SearchEngine:
 
         if self.use_tor:
             TOR_PROXY = f"socks5://127.0.0.1:{self.tor_port}"
-            try:
-                with httpx.Client(proxy=TOR_PROXY) as check_client:
-                    response = check_client.get("https://check.torproject.org/api/ip")
-                    message += f"Tor Verified: {response.text}"
-            except httpx.ConnectError as e:
-                raise e
+            message += f"Tor Verified: {self.verify_tor_connection()}"
         else:
             TOR_PROXY = ""
 
@@ -133,8 +138,10 @@ class SearchEngine:
                 url = result.get("href")
                 if url:
                     try:
+                        timeout = 8 if self.use_tor else 3
+
                         headers = {"User-Agent": self.user_agent}
-                        response = requests.get(url, headers=headers, timeout=2)
+                        response = requests.get(url, headers=headers, timeout=timeout)
                         notifications.append(
                             f"[{response.status_code}]: {response.url}"
                         )
