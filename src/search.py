@@ -2,32 +2,43 @@ import os
 from typing import TypedDict
 from dotenv import load_dotenv
 from tavily import TavilyClient
+import httpx
 from ddgs import DDGS
 import requests
 from bs4 import BeautifulSoup
 import trafilatura
-import logging
-
-logging.getLogger("bs4").setLevel(logging.ERROR)
 
 
 class SearchResult(TypedDict):
     notifications: list[str]
     context: str
+    message: str
 
 
 class SearchEngine:
     """Provides access to internet search engines"""
 
-    def __init__(self, selected_engine: str, user_agent: str = "") -> None:
+    def __init__(
+        self,
+        selected_engine: str,
+        user_agent: str = "",
+        use_tor: bool = True,
+        tor_port: int = 9050,
+    ) -> None:
         self.selected_engine = selected_engine
         self.user_agent = user_agent
+        self.use_tor = use_tor
+        self.tor_port = tor_port
 
     def text_query(self, query: str) -> SearchResult:
         """
         Searches the internet using the selected search tool
+
         Args:
             query: Search query
+
+        Returns:
+            Dictionary with 'notifications' and 'context' keys
         """
         match self.selected_engine:
             case "tavily":
@@ -40,11 +51,16 @@ class SearchEngine:
     def search_tavily(self, query: str) -> SearchResult:
         """
         Searches the internet using Tavily
+
         Args:
             query: Search query
+
+        Returns:
+            Dictionary with 'notifications' and 'context' keys
         """
         context: str = ""
         notifications: list[str] = []
+        message = ""
 
         try:
             load_dotenv()
@@ -69,17 +85,19 @@ class SearchEngine:
                 )
                 notifications.append(f"Fetched: {url}")
 
-            return {"notifications": notifications, "context": context}
+            return {
+                "notifications": notifications,
+                "context": context,
+                "message": message,
+            }
 
         except ValueError as e:
-            # API key missing
             notifications.append(f"Configuration error: {str(e)}")
-            return {"notifications": notifications, "context": ""}
+            return {"notifications": notifications, "context": "", "message": message}
 
         except Exception as e:
-            # Other errors (API errors, network issues, etc.)
             notifications.append(f"Tavily search error: {str(e)}")
-            return {"notifications": notifications, "context": ""}
+            return {"notifications": notifications, "context": "", "message": message}
 
     def search_duckduckgo(self, query: str) -> SearchResult:
         """
@@ -91,7 +109,20 @@ class SearchEngine:
         Returns:
             Dictionary with 'notifications' and 'context' keys
         """
-        with DDGS() as ddgs:
+        message: str = ""
+
+        if self.use_tor:
+            TOR_PROXY = f"socks5://127.0.0.1:{self.tor_port}"
+            try:
+                with httpx.Client(proxy=TOR_PROXY) as check_client:
+                    response = check_client.get("https://check.torproject.org/api/ip")
+                    message += f"Tor Verified: {response.text}"
+            except httpx.ConnectError as e:
+                raise e
+        else:
+            TOR_PROXY = ""
+
+        with DDGS(proxy=TOR_PROXY) as ddgs:
             results: list[dict] = []
             notifications: list[str] = []
             context: str = ""
@@ -108,7 +139,6 @@ class SearchEngine:
                             f"[{response.status_code}]: {response.url}"
                         )
 
-                        # Use trafilatura for main content extraction
                         extracted_text = trafilatura.extract(
                             response.content,
                             include_comments=False,
@@ -116,7 +146,6 @@ class SearchEngine:
                             no_fallback=False,
                         )
 
-                        # Fallback to BeautifulSoup if trafilatura returns nothing
                         if not extracted_text:
                             soup = BeautifulSoup(response.content, "html.parser")
 
@@ -191,4 +220,8 @@ class SearchEngine:
                     f"CONTENT: {result['text']}...\n\n"
                 )
 
-            return {"notifications": notifications, "context": context}
+            return {
+                "notifications": notifications,
+                "context": context,
+                "message": message,
+            }

@@ -6,7 +6,7 @@ search_model = ""
 # Model Settings
 keep_alive = 60
 main_thinking = true #Recommended if supported
-search_thinking = true
+search_thinking = false
 
 # Context and instructions
 initial_context = "You are an AI assistant with internet access."
@@ -19,6 +19,11 @@ search_engine = "ddgs" # Free, slower.
 # search_engine = "tavily" # Requires api key in .env with key: TAVILY_KEY
 
 search_headers = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36" # Required for best ddgs experience
+
+# Tor Network Settings (Optional - for enhanced privacy with DuckDuckGo)
+# Requires Tor to be installed and running on your system or open in a browser on your system
+use_tor = false # Set to true to route DuckDuckGo searches through Tor
+tor_port = 9050 # Default Tor SOCKS proxy port, set to 9150 if using an open browser
 
 [user_data]
 # Location, age, name, etc.

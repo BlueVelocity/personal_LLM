@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Any
 import sys
 from datetime import datetime
+import httpx
 
 import ollama
 
@@ -71,7 +72,10 @@ def main():
     ai.load_into_memory()
 
     search = SearchEngine(
-        search_config.search_engine, user_agent=search_config.search_headers
+        search_config.search_engine,
+        user_agent=search_config.search_headers,
+        use_tor=search_config.use_tor,
+        tor_port=search_config.tor_port,
     )
 
     view = View()
@@ -131,12 +135,26 @@ def main():
                     f"Searching the web for: [italic]{search_decision['search_term']}[/italic]...",
                     style=style_config.system,
                 )
-                search_data = search.text_query(search_decision["search_term"])
+
+                try:
+                    search_data = search.text_query(search_decision["search_term"])
+                except httpx.ConnectError:
+                    view.print_system_message(
+                        "Unable to route through the tor network.",
+                        style=style_config.warning,
+                    )
+                    continue
+
+                if search_data["message"]:
+                    view.print_system_message(
+                        search_data["message"], style=style_config.system
+                    )
+
                 notifications: list[str] = search_data["notifications"]
                 search_result: str = search_data["context"]
 
                 memory.add_search_message(
-                    f"Citations: Every claim derived from the below search results must be attributed using in-line Markdown hyperlinks: [[NUMBER](URL)]\n\n{search_result}"
+                    f"Citations: Every claim derived from the below search results must be attributed using in-line Markdown hyperlinks: [Source [NUMBER](URL)]\n\n{search_result}"
                 )
             else:
                 view.print_system_message(

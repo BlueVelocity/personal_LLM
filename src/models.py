@@ -34,6 +34,8 @@ class ModelConfig(NamedTuple):
 class SearchConfig(NamedTuple):
     search_engine: str
     search_headers: str
+    use_tor: bool
+    tor_port: int
 
 
 class StyleConfig(NamedTuple):
