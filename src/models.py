@@ -39,11 +39,11 @@ class SearchConfig(NamedTuple):
 class StyleConfig(NamedTuple):
     system: str
     assistant: str
-    assistant_thinking: str
-    assistant_history: str
+    assistant_text: str
     user: str
     header: str
     warning: str
+    text: str
 
 
 class UserData(NamedTuple):

@@ -12,6 +12,7 @@ from prompt_toolkit import prompt
 from prompt_toolkit.history import InMemoryHistory
 from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.key_binding import KeyBindings
+from prompt_toolkit.styles import Style
 
 from models import ChatItem, ModelResponse
 
@@ -115,20 +116,25 @@ class View:
         )
 
     def print_user_message(self, message: str, style: str):
-        self.CONSOLE.print(f"\n[bold {style}] > You:[/bold {style}] {message}\n")
+        self.CONSOLE.print(
+            f"\n[bold {style}] > You:[/bold {style}] [{style}]{message}[/{style}]\n"
+        )
 
     def print_assistant_message(self, message: str, name: str, style: str):
         self.CONSOLE.print(
             Panel(
                 Markdown(message),
                 title=f"[bold {style}]{name}[/bold {style}]",
+                style=style,
                 title_align="left",
                 border_style=style,
                 expand=True,
             ),
         )
 
-    def get_user_input(self) -> str:
+    def get_user_input(self, style: str) -> str:
+        custom_style = Style.from_dict({"": style})
+
         kb = KeyBindings()
 
         @kb.add(
@@ -154,6 +160,7 @@ class View:
             key_bindings=kb,
             prompt_continuation=prompt_continuation,
             history=self.history,
+            style=custom_style,
         ).strip()
 
         return user_input
@@ -164,7 +171,7 @@ class View:
         time: str,
         response_stream: Iterator,
         style: str,
-        thinking_style,
+        text_style,
     ):
         thinking_str: str = ""
         content_str: str = ""
@@ -191,8 +198,8 @@ class View:
                         Panel(
                             Markdown(thinking_str),
                             title=f"{model_name}'s Thoughts...",
-                            style=thinking_style,
-                            border_style=thinking_style,
+                            style=f"dim {text_style}",
+                            border_style=f"dim {style}",
                             title_align="left",
                             expand=True,
                         )
@@ -203,6 +210,7 @@ class View:
                         Panel(
                             Markdown(content_str),
                             title=f"[bold {style}]{model_name}[/bold {style}] - {time}",
+                            style=text_style,
                             border_style=style,
                             title_align="left",
                             expand=True,

@@ -94,7 +94,7 @@ def main():
 
     try:
         while True:
-            user_input: str = view.get_user_input()
+            user_input: str = view.get_user_input(style_config.text)
             if not user_input:
                 continue
 
@@ -135,7 +135,9 @@ def main():
                 notifications: list[str] = search_data["notifications"]
                 search_result: str = search_data["context"]
 
-                memory.add_search_message(search_result)
+                memory.add_search_message(
+                    f"Citations: Every claim derived from the below search results must be attributed using in-line Markdown hyperlinks: [[NUMBER](URL)]\n\n{search_result}"
+                )
             else:
                 view.print_system_message(
                     "Decided not to search.", style=style_config.system
@@ -154,7 +156,7 @@ def main():
                     formatted_now,
                     response_stream,
                     style=style_config.assistant,
-                    thinking_style=style_config.assistant_thinking,
+                    text_style=style_config.assistant_text,
                 )
             except ollama.ResponseError:
                 view.print_system_message(
@@ -172,7 +174,7 @@ def main():
                     formatted_now,
                     response_stream,
                     style=style_config.assistant,
-                    thinking_style=style_config.assistant_thinking,
+                    text_style=style_config.assistant_text,
                 )
 
             memory.add_assistant_message(ai_response.content)
