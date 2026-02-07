@@ -123,15 +123,18 @@ class AIEngine:
 
         copy_of_messages[0] = {
             "role": "system",
-            "content": f"""
-            CONTEXT:  You are a Search Intent Classifier. Your goal is to determine if a web search is required and generate an optimized query.
+            "content": "You are a search intent classifier. Output only valid JSON.",
+        }
 
+        copy_of_messages[-1] = {
+            "role": "user",
+            "content": f"""
             CURRENT DATE: {date.today()}.
 
             USER DATA: {user_data}
 
             Decision Logic:
-            - SEARCH (true) if: Query requires current dates, real-time events, specific facts (CEOs, prices, news), or the user explicitly requests a search.
+            - SEARCH (true) if: Query requires current dates, real-time events, specific facts (CEOs, prices, news), or you don't know or are unsure of something that is important in context. ALWAYS search if the user requests a search or for you to look it up.
             - NO SEARCH (false) if: Query is about logic, math, general concepts, coding syntax, historical well-known facts, or creative writing.
 
             Privacy & Optimization Rules:
@@ -140,12 +143,7 @@ class AIEngine:
 
             Output Format (JSON ONLY):
             {{"needs_search": bool, "search_term": "string"}}
-            """,
-        }
 
-        copy_of_messages[-1] = {
-            "role": "user",
-            "content": f"""
             LATEST_QUERY:
             {messages[-1]}
             """,
