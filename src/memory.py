@@ -174,10 +174,10 @@ class Memory:
             memory.delete("*")  # Clear all except active
         """
 
-        if int(id) == self.current_id:
+        if id != "*" and int(id) == self.current_id:
             raise ChatNotFoundError("Cannot delete current ID")
 
-        if int(id) not in self._get_all_chat_ids():
+        if id != "*" and int(id) not in self._get_all_chat_ids():
             raise ChatNotFoundError("ID does not exist")
 
         id_str = str(id)
