@@ -9,8 +9,6 @@ from models import UserData
 
 
 class AIEngine:
-    """Provides connection with model and moderates interaction"""
-
     def __init__(
         self,
         model: str,
@@ -33,8 +31,6 @@ class AIEngine:
         self.load_into_memory()
 
     def load_into_memory(self) -> None:
-        """Loads the model(s) into memory on running the program"""
-
         thread = threading.Thread(
             target=self.client.generate,
             kwargs={
@@ -65,7 +61,6 @@ class AIEngine:
         self.load_into_memory()
 
     def get_models(self) -> ollama.ListResponse:
-        """Gets the model list and checks that Ollama is running and aavailable"""
         try:
             models = ollama.list()
 
@@ -98,12 +93,10 @@ class AIEngine:
             return models
 
     def remove_from_memory(self) -> None:
-        """Clears the model(s) from RAM"""
         ollama.generate(model=self.model, keep_alive=0)
         ollama.generate(model=self.search_model, keep_alive=0)
 
     def get_response_stream(self, messages: list[dict[str, str]]) -> Iterator:
-        """Returns the Ollama model response stream"""
         stream = self.client.chat(
             model=self.model,
             messages=messages,
@@ -118,7 +111,6 @@ class AIEngine:
     def determine_search(
         self, messages: list[dict[str, str]], user_data: UserData
     ) -> dict[str, str]:
-        """Determines if search is required given the current chat context"""
         copy_of_messages = copy.deepcopy(messages)
 
         copy_of_messages[0] = {
@@ -137,9 +129,8 @@ class AIEngine:
             - SEARCH (true) if: Query requires current dates, real-time events, specific facts (CEOs, prices, news), or you don't know or are unsure of something that is important in context. ALWAYS search if the user requests a search or for you to look it up.
             - NO SEARCH (false) if: Query is about logic, math, general concepts, coding syntax, historical well-known facts, or creative writing.
 
-            Privacy & Optimization Rules:
-            1. Format: Output 1-5 keywords. Use operators (site:, filetype:) only if intent is clear.
-            2. Context: Include the year (2026) or full date (2026-01-31) if the query is time-sensitive.
+            Optimization Rules:
+            1. Context: Include the full date if the query is time-sensitive. Include other information as necessary.
 
             Output Format (JSON ONLY):
             {{"needs_search": bool, "search_term": "string"}}
@@ -160,6 +151,7 @@ class AIEngine:
             )
         except ollama.ResponseError:
             self.search_thinking = False
+
             response = self.client.chat(
                 model=self.search_model,
                 messages=copy_of_messages,

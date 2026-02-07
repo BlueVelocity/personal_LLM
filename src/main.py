@@ -3,6 +3,7 @@ from typing import Any
 import sys
 from datetime import datetime
 import httpx
+from ddgs.exceptions import DDGSException
 
 import ollama
 
@@ -143,19 +144,27 @@ def main():
                         "Unable to route through the tor network.",
                         style=style_config.warning,
                     )
-                    continue
-
-                if search_data["message"]:
+                except DDGSException:
                     view.print_system_message(
-                        search_data["message"], style=style_config.system
+                        "Unable to get search results",
+                        style=style_config.warning,
                     )
 
-                notifications: list[str] = search_data["notifications"]
-                search_result: str = search_data["context"]
+                    memory.add_search_message(
+                        "Search unsuccessful. Unable to get search results."
+                    )
+                else:
+                    if search_data["message"]:
+                        view.print_system_message(
+                            search_data["message"], style=style_config.system
+                        )
 
-                memory.add_search_message(
-                    f"Citations: Every claim derived from the below search results must be attributed using in-line Markdown hyperlinks: [Source [NUMBER](URL)]\n\n{search_result}"
-                )
+                    notifications: list[str] = search_data["notifications"]
+                    search_result: str = search_data["context"]
+
+                    memory.add_search_message(
+                        f"Citations: Every claim derived from the below search results must be attributed using in-line Markdown hyperlinks: [Source [NUMBER](URL)]\n\n{search_result}"
+                    )
             else:
                 view.print_system_message(
                     "Decided not to search.", style=style_config.system

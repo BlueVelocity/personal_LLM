@@ -127,14 +127,14 @@ class SearchEngine:
             notifications: list[str] = []
             context: str = ""
 
-            for i, result in enumerate(
-                ddgs.text(query, max_results=5, backend="duckduckgo")
-            ):
+            search_results = ddgs.text(query, max_results=5, backend="duckduckgo")
+
+            for i, result in enumerate(search_results):
                 url = result.get("href")
                 if url:
                     try:
                         headers = {"User-Agent": self.user_agent}
-                        response = requests.get(url, headers=headers, timeout=3)
+                        response = requests.get(url, headers=headers, timeout=2)
                         notifications.append(
                             f"[{response.status_code}]: {response.url}"
                         )
@@ -151,7 +151,14 @@ class SearchEngine:
 
                             # Remove unwanted elements
                             for element in soup(
-                                ["script", "style", "nav", "footer", "header", "aside"]
+                                [
+                                    "script",
+                                    "style",
+                                    "nav",
+                                    "footer",
+                                    "header",
+                                    "aside",
+                                ]
                             ):
                                 element.decompose()
 
@@ -161,7 +168,11 @@ class SearchEngine:
                                 or soup.find("article")
                                 or soup.find(
                                     "div",
-                                    class_=["content", "main-content", "post-content"],
+                                    class_=[
+                                        "content",
+                                        "main-content",
+                                        "post-content",
+                                    ],
                                 )
                                 or soup.body
                             )
